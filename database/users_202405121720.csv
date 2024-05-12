@@ -1,0 +1,12 @@
+"id","email","password","enabled","2FA_code","2FA_enabled","user_secret","verification_code","youtube","instagram","facebook","username","artistRoles","bio_pdf_location","phone_number","phone_number_verified"
+16,thodoris_diamantidis@hotmail.com,$2a$10$uD/MrPB8XfOANMq3VurA/udx/P..EADXCQeQ6IUPAF2Zgf8rc31u2,true,,false,,"355569ad-03f4-4e55-8615-e82bc7aa256c",,,,,,,,false
+6,dtsiantaris@gmail.com,$2a$10$a7l9MccqlDdy.hDXE1dTmOHeAgkeP9QuW2sdEiz0rF5bdZDm4NPJW,true,,false,,ef5ddeba-ac31-46e8-a78f-855e57e547d9,,,,,,,,false
+8,silverthe165@gmail.com,$2a$10$aZR5B7WmmiU..oPzI8BT4uik.b4HMFaPTl3nErkcngJoNTHOSF2eO,true,,false,,d6179622-83db-444e-b466-7f9c9efd3c43,,,,,,,,false
+9,nikosvoulgaridis1@gmail.com,$2a$10$aFnQRHwcORFsQ.RLWBxH5.TjU0CtqZHC6J1xcxyW364YaRsQvRJNS,true,,false,,"3a20864f-eb8c-4d60-8418-08ca79d313cf",,,,,,,,false
+10,xalvas23@gmail.com,$2a$10$C/hAWFl8LGH7Y0JNz.pboOGcQYLRggOFKH9A5nC2nCeCE0q/42mDK,true,,false,,e964f40a-3120-427f-b2ee-eb32a1568669,,,https://www.facebook.com/random.user.75/,,{Ζωγραφική},,,false
+5,nikos.voulgaridis1@gmail.com,$2a$10$xkYFYUotZA8zrQqbBH4xzeeyrD0pPCSMCRptEHpuLH86pLmlfb126,true,,false,,"7b9df4ba-e3e5-4353-b577-cc19215e8bd5",,,,nikosv1,,https://play.min.io/test.dot.net.api/UserBiographies/User_5_Bio.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=3PKAzdLuyugb3rlAat8s%2F20231207%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231207T160630Z&X-Amz-Expires=1000&X-Amz-SignedHeaders=host&response-content-type=application%2Fpdf&X-Amz-Signature=277018f3624a1eaaa66e2f91869ceec9121607f29125974d9a563671a77c13ea,,false
+20,nikos.voulgaridis1+test@gmail.com,$2a$10$.aWfJ9s93CPvURSon3f7iu4JG4nVU41sSjTYFGN8Vx9zsOo1O.iJ.,true,,false,,c63a4fcd-dbbf-4dbd-81d4-6611b1d0fb80,,,,,,,,false
+21,nikosvoulgaridis1+test@gmail.com,$2a$10$I6lEufJYc.qA7w9JJq42kOKI46qknD9Yv0G7g7oZsbNMK36nETOP.,false,,false,,"94341e7b-a8a6-462d-9605-cb0f2a1979db",,,,,,,,false
+22,nikos.voulgaridis1+test1@gmail.com,$2a$10$LoGgrNZ9Qul9gQa79wUjeuSLhD7t3Pcjc9GLigdPfs.xnM/UsYmp6,true,,false,,ae019e3c-2100-4cc3-9160-88e3e9cfd580,,,,,,,,false
+18,test3@gmail.com,$2a$10$6iUHgR.TSwyTuSEAzpqQJettQqbbBKCqvGEeiVxOkTwqpYnRXXCS2,false,,false,,"5f95c566-9cd1-459a-b181-a9496259063e",,,,,,,,false
+15,nikos.voulgaridis1+user@gmail.com,$2a$10$OEWzpSG7GqWSdpxD8YEMneJ1xfzUMu9WhyZsi5rZZ27gm32TlCxfi,true,,false,,"94e250b1-459c-47d8-98c6-98269c478c02",,,,nick.user,,,,false
