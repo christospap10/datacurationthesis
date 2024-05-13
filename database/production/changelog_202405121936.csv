@@ -1,0 +1,37 @@
+"ID","EventType","TableName","Value","CollumnName","timestamp"
+57,delete,venue,"1936",ID,2023-11-29 02:50:07.077
+58,delete,venue,Unexisting Venue 1,Title,2023-11-29 02:50:07.077
+59,delete,venue,Address 1,Address,2023-11-29 02:50:07.077
+60,delete,venue,"1937",ID,2023-11-29 02:50:17.103
+61,delete,venue,Unexisting Venue 3,Title,2023-11-29 02:50:17.103
+62,delete,venue,Address 45,Address,2023-11-29 02:50:17.103
+63,insert,venue,"1938",ID,2023-11-30 15:55:43.109
+64,insert,venue,test address,Title,2023-11-30 15:55:43.109
+65,insert,venue,test address,Address,2023-11-30 15:55:43.109
+66,update,users,User 5 has enabled their account through email verification,enabled,2023-12-08 14:30:57.389
+67,update,users,User 5 has enabled their account through email verification,enabled,2023-12-08 14:35:11.849
+68,insert,users,"16",id,2023-12-10 12:59:57.184
+69,insert,users,thodoris_diamantidis@hotmail.com,email,2023-12-10 12:59:57.184
+70,update,users,User 16 has enabled their account through email verification,enabled,2023-12-10 13:00:23.620
+71,update,events,"18964",ID,2023-12-12 19:33:21.098
+72,update,events,From random price for checking to apo 100000000,PriceRange,2023-12-12 19:33:21.098
+73,insert,users,"18",id,2024-01-07 13:58:02.823
+74,insert,users,test3@gmail.com,email,2024-01-07 13:58:02.823
+75,insert,events,"18965",ID,2024-01-08 19:50:42.165
+76,insert,events,"497",ProductionID,2024-01-08 19:50:42.165
+77,insert,events,"305",VenueID,2024-01-08 19:50:42.165
+78,insert,events,"01/20/2024 20:06:00",DateEvent,2024-01-08 19:50:42.165
+79,insert,events,"10",PriceRange,2024-01-08 19:50:42.165
+80,insert,events,"14",SystemId,2024-01-08 19:50:42.165
+81,insert,contributions,"14747",ID,2024-01-18 19:33:17.289
+82,insert,contributions,"4659",PeopleID,2024-01-18 19:33:17.289
+83,insert,contributions,"506",ProductionID,2024-01-18 19:33:17.289
+84,insert,contributions,"3029",RoleID,2024-01-18 19:33:17.289
+85,insert,users,"20",id,2024-02-01 14:43:29.733
+86,insert,users,nikos.voulgaridis1+test@gmail.com,email,2024-02-01 14:43:29.733
+87,update,users,User 20 has enabled their account through email verification,enabled,2024-02-01 14:43:49.800
+88,insert,users,"21",id,2024-02-01 14:50:53.322
+89,insert,users,nikosvoulgaridis1+test@gmail.com,email,2024-02-01 14:50:53.322
+90,insert,users,"22",id,2024-02-01 14:52:39.938
+91,insert,users,nikos.voulgaridis1+test1@gmail.com,email,2024-02-01 14:52:39.938
+92,update,users,User 22 has enabled their account through email verification,enabled,2024-02-01 14:52:56.542
