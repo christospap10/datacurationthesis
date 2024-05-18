@@ -1,0 +1,13 @@
+{
+	"type": "postgres",
+	"host": "localhost",
+	"port": 5432,
+	"username": "postgres",
+	"password": "password",
+	"database": "theatricalplays",
+	"synchronize": true,
+	"logging": true,
+	"entities": [
+		"src/entity/**/*.ts"
+	]
+}
