@@ -1,1 +1,2 @@
-console.log("Start server");
+import { logger } from "./logger";
+logger.info("Server started");
