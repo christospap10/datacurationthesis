@@ -25,6 +25,7 @@ public class PersonService {
 		try {
 			String query = "SELECT \"ID\", \"Birthdate\", \"Fullname\", \"HairColor\", \"Height\", \"EyeColor\", \"Weight\", \"Languages\", \"Description\", \"ClaimingStatus\", \"IsClaimed\", \"Roles\", \"SystemID\", \"timestamp\" FROM persons LIMIT 10";
 			Query q = entityManager.createNativeQuery(query, Person.class);
+			@SuppressWarnings("unchecked")
 			List<Person> persons = q.getResultList();
 			LoggerController.info(persons.toString());
 			return persons;
