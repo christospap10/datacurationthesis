@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
+
 @SpringBootApplication
 public class DatacurationthesisApplication {
 
@@ -12,5 +13,4 @@ public class DatacurationthesisApplication {
 		SpringApplication.run(DatacurationthesisApplication.class, args);
 		LoggerController.info("Server started");
 	}
-
 }
