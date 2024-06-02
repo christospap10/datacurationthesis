@@ -7,10 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class PersonService {
@@ -33,12 +30,21 @@ public class PersonService {
 			LoggerController.logException("Exception while getting 10 ids", e);
 			String message = e.getMessage();
 			LoggerController.error(message);
-			return null; 
+			return null;
 		}
 	}
 
 	public List<Person> getAllPersons() {
-		Pageable pageable = PageRequest.of(0, 10);
-		return personRepository.findAll(pageable).getContent();
+		try {
+			LoggerController.info("Getting all persons");
+			List<Person> persons = personRepository.findAllWithLimit(0, 50);
+			LoggerController.info(persons.toString());
+			return persons;
+		} catch (Exception e) {
+			LoggerController.logException("Exception while getting all persons", e);
+			String message = e.getMessage();
+			LoggerController.error(message);
+			return null;
+		}
 	}
 }

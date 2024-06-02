@@ -2,20 +2,19 @@ package com.datacurationthesis.datacurationthesis.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Date;
 
+
+
 @Entity
-@Table(name = "persons")
+@Table(name = "persons", schema = "public")
 public class Person {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column
-	private Integer ID;
+	@Column(name = "ID")
+	private Integer id;
 
 	@Column
 	private String fullname;
@@ -45,11 +44,11 @@ public class Person {
 	private String claimingstatus;
 
 	public Integer getId() {
-		return this.ID;
+		return this.id;
 	}
 
-	public void setId(Integer ID) {
-		this.ID = ID;
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getFullname() {
