@@ -1,162 +1,202 @@
 package com.datacurationthesis.datacurationthesis.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.util.Date;
-
-
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "persons", schema = "public")
 public class Person {
 
-	@Id
-	@Column(name = "ID")
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@Column
-	private String fullname;
-	@Column
-	private String systemid;
-	@Column
-	private Date timestamp;
-	@Column
-	private String haircolor;
-	@Column
-	private Integer height;
-	@Column
-	private String eyecolor;
-	@Column
-	private Integer weight;
-	@Column
-	private String languages;
-	@Column
-	private String description;
-	@Column
-	private Date birthdate;
-	@Column
-	private String roles;
-	@Column
-	private Boolean isclaimed;
-	@Column
-	private String claimingstatus;
+    @Column(nullable = false)
+    private String fullname;
 
-	public Integer getId() {
-		return this.id;
-	}
+    @Column(name = "systemid",nullable = false)
+    private int systemId;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
-	public String getFullname() {
-		return this.fullname;
-	}
+    private String haircolor;
+    private String height;
+    private String eyecolor;
+    private String weight;
 
-	public void setFullname(String fullname) {
-		this.fullname = fullname;
-	}
+    private List<String> languages;
 
-	public String getSystemid() {
-		return this.systemid;
-	}
+    private String description;
+    private String bio;
+    private LocalDateTime birthdate;
 
-	public void setSystemid(String systemid) {
-		this.systemid = systemid;
-	}
+    private List<String> roles;
 
-	public Date getTimestamp() {
-		return this.timestamp;
-	}
+    @Column(nullable = false)
+    private boolean isclaimed;
 
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
+    @Enumerated(EnumType.ORDINAL)
+    private ClaimingStatus claimingstatus;
 
-	public String getHaircolor() {
-		return this.haircolor;
-	}
+    // Navigational Properties
+    @ManyToOne
+    @JoinColumn(name = "systemid", insertable = false, updatable = false)
+    private System system;
 
-	public void setHaircolor(String haircolor) {
-		this.haircolor = haircolor;
-	}
+    @OneToMany(mappedBy = "personId")
+    private List<Contribution> contributions;
 
-	public Integer getHeight() {
-		return this.height;
-	}
+    @OneToMany(mappedBy = "person")
+    private List<Image> images;
 
-	public void setHeight(Integer height) {
-		this.height = height;
-	}
+    public int getId() {
+        return this.id;
+    }
 
-	public String getEyecolor() {
-		return this.eyecolor;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public void setEyecolor(String eyecolor) {
-		this.eyecolor = eyecolor;
-	}
+    public String getFullname() {
+        return this.fullname;
+    }
 
-	public Integer getWeight() {
-		return this.weight;
-	}
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
 
-	public void setWeight(Integer weight) {
-		this.weight = weight;
-	}
+    public int getSystemId() {
+        return this.systemId;
+    }
 
-	public String getLanguages() {
-		return this.languages;
-	}
+    public void setSystemId(int systemId) {
+        this.systemId = systemId;
+    }
 
-	public void setLanguages(String languages) {
-		this.languages = languages;
-	}
+    public LocalDateTime getTimestamp() {
+        return this.timestamp;
+    }
 
-	public String getDescription() {
-		return this.description;
-	}
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public String getHairColor() {
+        return this.haircolor;
+    }
 
-	public Date getBirthdate() {
-		return this.birthdate;
-	}
+    public void setHairColor(String haircolor) {
+        this.haircolor = haircolor;
+    }
 
-	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
-	}
+    public String getHeight() {
+        return this.height;
+    }
 
-	public String getRoles() {
-		return this.roles;
-	}
+    public void setHeight(String height) {
+        this.height = height;
+    }
 
-	public void setRoles(String roles) {
-		this.roles = roles;
-	}
+    public String getEyeColor() {
+        return this.eyecolor;
+    }
 
-	public Boolean isIsclaimed() {
-		return this.isclaimed;
-	}
+    public void setEyeColor(String eyecolor) {
+        this.eyecolor = eyecolor;
+    }
 
-	public Boolean getIsclaimed() {
-		return this.isclaimed;
-	}
+    public String getWeight() {
+        return this.weight;
+    }
 
-	public void setIsclaimed(Boolean isclaimed) {
-		this.isclaimed = isclaimed;
-	}
+    public void setWeight(String weight) {
+        this.weight = weight;
+    }
 
-	public String getClaimingstatus() {
-		return this.claimingstatus;
-	}
+    public List<String> getLanguages() {
+        return this.languages;
+    }
 
-	public void setClaimingstatus(String claimingstatus) {
-		this.claimingstatus = claimingstatus;
-	}
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getBio() {
+        return this.bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public LocalDateTime getBirthdate() {
+        return this.birthdate;
+    }
+
+    public void setBirthdate(LocalDateTime birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public List<String> getRoles() {
+        return this.roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public boolean isIsClaimed() {
+        return this.isclaimed;
+    }
+
+    public boolean getIsClaimed() {
+        return this.isclaimed;
+    }
+
+    public void setIsClaimed(boolean isclaimed) {
+        this.isclaimed = isclaimed;
+    }
+
+    public ClaimingStatus getClaimingStatus() {
+        return this.claimingstatus;
+    }
+
+    public void setClaimingStatus(ClaimingStatus claimingstatus) {
+        this.claimingstatus = claimingstatus;
+    }
+
+    public System getSystem() {
+        return this.system;
+    }
+
+    public void setSystem(System system) {
+        this.system = system;
+    }
+
+    public List<Contribution> getContributions() {
+        return this.contributions;
+    }
+
+    public void setContributions(List<Contribution> contributions) {
+        this.contributions = contributions;
+    }
+
+    public List<Image> getImages() {
+        return this.images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
+    }
 
 }

@@ -1,10 +1,8 @@
 package com.datacurationthesis.datacurationthesis.service;
 
 import com.datacurationthesis.datacurationthesis.entity.Person;
-import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.PersonRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,33 +16,10 @@ public class PersonService {
 	@Autowired
 	private EntityManager entityManager;
 
-	public List<Person> getTenId() {
-		try {
-			String query = "SELECT \"ID\", \"Birthdate\", \"Fullname\", \"HairColor\", \"Height\", \"EyeColor\", \"Weight\", \"Languages\", \"Description\", \"ClaimingStatus\", \"IsClaimed\", \"Roles\", \"SystemID\", \"timestamp\" FROM persons LIMIT 10";
-			Query q = entityManager.createNativeQuery(query, Person.class);
-			@SuppressWarnings("unchecked")
-			List<Person> persons = q.getResultList();
-			LoggerController.info(persons.toString());
-			return persons;
-		} catch (Exception e) {
-			LoggerController.logException("Exception while getting 10 ids", e);
-			String message = e.getMessage();
-			LoggerController.error(message);
-			return null;
-		}
-	}
 
 	public List<Person> getAllPersons() {
-		try {
-			LoggerController.info("Getting all persons");
-			List<Person> persons = personRepository.findAllWithLimit(0, 50);
-			LoggerController.info(persons.toString());
-			return persons;
-		} catch (Exception e) {
-			LoggerController.logException("Exception while getting all persons", e);
-			String message = e.getMessage();
-			LoggerController.error(message);
-			return null;
-		}
+		List<Person> persons = personRepository.findAll();	
+		return persons;
 	}
+
 }

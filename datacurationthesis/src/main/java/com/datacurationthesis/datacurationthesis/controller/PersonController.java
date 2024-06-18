@@ -20,9 +20,4 @@ public class PersonController {
 		return personService.getAllPersons();
 	}
 
-	@GetMapping("/firstten")
-	public List<Person> getFirstTen() {
-		return personService.getTenId();
-	}
-
 }
