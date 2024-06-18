@@ -1,8 +1,10 @@
 package com.datacurationthesis.datacurationthesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
+
 
 @Entity
 @Table(name = "venue", schema = "public")
@@ -32,12 +34,15 @@ public class Venue {
     // Navigational Properties
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "systemid", insertable = false, updatable = false)
+    @JsonIgnore
     private System system;
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Event> events;
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<UserVenue> userVenues;
 
     // Getters and Setters
