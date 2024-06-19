@@ -1,9 +1,11 @@
 package com.datacurationthesis.datacurationthesis.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Entity
 @Table(name = "events")
@@ -13,19 +15,19 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
+    @Column(name = "productionid",nullable = false)
     private int productionId;
 
-    @Column(nullable = false)
+    @Column(name = "venueid",nullable = false)
     private int venueId;
 
-    @Column(nullable = false)
+    @Column(name = "dateevent",nullable = false)
     private LocalDateTime dateEvent;
 
-    @Column(nullable = false)
+    @Column(name = "pricerange",nullable = false)
     private String priceRange;
 
-    @Column(nullable = false)
+    @Column(name = "systemid",nullable = false)
     private int systemId;
 
     @Column(nullable = false)
@@ -36,18 +38,22 @@ public class Event {
 
     // Navigational Properties
     @ManyToOne
-    @JoinColumn(name = "productionId", insertable = false, updatable = false)
+    @JoinColumn(name = "productionid", insertable = false, updatable = false)
+    @JsonIgnore
     private Production production;
 
     @ManyToOne
-    @JoinColumn(name = "systemId", insertable = false, updatable = false)
+    @JoinColumn(name = "systemid", insertable = false, updatable = false)
+    @JsonIgnore
     private System system;
 
     @ManyToOne
-    @JoinColumn(name = "venueId", insertable = false, updatable = false)
+    @JoinColumn(name = "venueid", insertable = false, updatable = false)
+    @JsonIgnore
     private Venue venue;
 
-    @OneToMany(mappedBy = "eventId")
+    @OneToMany(mappedBy = "event")
+    @JsonIgnore
     private List<UserEvent> userEvents;
 
     // Getters and Setters

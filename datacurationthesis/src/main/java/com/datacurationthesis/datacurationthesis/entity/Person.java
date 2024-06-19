@@ -1,8 +1,10 @@
 package com.datacurationthesis.datacurationthesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Entity
 @Table(name = "persons", schema = "public")
@@ -43,12 +45,15 @@ public class Person {
     // Navigational Properties
     @ManyToOne
     @JoinColumn(name = "systemid", insertable = false, updatable = false)
+    @JsonIgnore
     private System system;
 
     @OneToMany(mappedBy = "personId")
+    @JsonIgnore
     private List<Contribution> contributions;
 
     @OneToMany(mappedBy = "person")
+    @JsonIgnore
     private List<Image> images;
 
     public int getId() {
