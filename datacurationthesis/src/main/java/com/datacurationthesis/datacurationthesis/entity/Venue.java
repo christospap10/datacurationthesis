@@ -45,6 +45,21 @@ public class Venue {
     @JsonIgnore
     private List<UserVenue> userVenues;
 
+    public Venue() {
+    }
+
+    public Venue(Integer id, String title, String address, Integer systemid, Date timestamp, boolean isClaimed, System system, List<Event> events, List<UserVenue> userVenues) {
+        this.id = id;
+        this.title = title;
+        this.address = address;
+        this.systemid = systemid;
+        this.timestamp = timestamp;
+        this.isClaimed = isClaimed;
+        this.system = system;
+        this.events = events;
+        this.userVenues = userVenues;
+    }
+
     // Getters and Setters
     public Integer getId() {
         return id;
@@ -94,26 +109,32 @@ public class Venue {
         this.isClaimed = isClaimed;
     }
 
+    @JsonIgnore
     public System getSystem() {
         return system;
     }
 
+    @JsonIgnore
     public void setSystem(System system) {
         this.system = system;
     }
 
+    @JsonIgnore
     public List<Event> getEvents() {
         return events;
     }
 
+    @JsonIgnore
     public void setEvents(List<Event> events) {
         this.events = events;
     }
 
+    @JsonIgnore
     public List<UserVenue> getUserVenues() {
         return userVenues;
     }
 
+    @JsonIgnore
     public void setUserVenues(List<UserVenue> userVenues) {
         this.userVenues = userVenues;
     }

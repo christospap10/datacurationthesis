@@ -56,7 +56,24 @@ public class Event {
     @JsonIgnore
     private List<UserEvent> userEvents;
 
-    // Getters and Setters
+    public Event() {
+    }
+
+    public Event(int id, int productionId, int venueId, LocalDateTime dateEvent, String priceRange, int systemId, LocalDateTime timestamp, boolean isClaimed, Production production, System system, Venue venue, List<UserEvent> userEvents) {
+        this.id = id;
+        this.productionId = productionId;
+        this.venueId = venueId;
+        this.dateEvent = dateEvent;
+        this.priceRange = priceRange;
+        this.systemId = systemId;
+        this.timestamp = timestamp;
+        this.isClaimed = isClaimed;
+        this.production = production;
+        this.system = system;
+        this.venue = venue;
+        this.userEvents = userEvents;
+    }
+// Getters and Setters
 
     public int getId() {
         return id;
@@ -122,34 +139,41 @@ public class Event {
         isClaimed = claimed;
     }
 
+    @JsonIgnore
     public Production getProduction() {
         return production;
     }
 
+    @JsonIgnore
     public void setProduction(Production production) {
         this.production = production;
     }
 
+    @JsonIgnore
     public System getSystem() {
         return system;
     }
 
+    @JsonIgnore
     public void setSystem(System system) {
         this.system = system;
     }
-
+    @JsonIgnore
     public Venue getVenue() {
         return venue;
     }
 
+    @JsonIgnore
     public void setVenue(Venue venue) {
         this.venue = venue;
     }
 
+    @JsonIgnore
     public List<UserEvent> getUserEvents() {
         return userEvents;
     }
 
+    @JsonIgnore
     public void setUserEvents(List<UserEvent> userEvents) {
         this.userEvents = userEvents;
     }

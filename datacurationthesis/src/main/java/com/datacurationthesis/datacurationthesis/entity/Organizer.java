@@ -1,5 +1,6 @@
 package com.datacurationthesis.datacurationthesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -45,12 +46,32 @@ public class Organizer {
 	// Navigational Properties
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "systemid", insertable = false, updatable = false)
+	@JsonIgnore
 	private System system;
 
 	@OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<Production> productions;
 
-	// Getters and Setters
+	public Organizer() {
+	}
+
+	public Organizer(Integer id, String name, String address, String town, String postcode, String phone, String email, String doy, String afm, Integer systemid, Date timestamp, System system, List<Production> productions) {
+		this.id = id;
+		this.name = name;
+		this.address = address;
+		this.town = town;
+		this.postcode = postcode;
+		this.phone = phone;
+		this.email = email;
+		this.doy = doy;
+		this.afm = afm;
+		this.systemid = systemid;
+		this.timestamp = timestamp;
+		this.system = system;
+		this.productions = productions;
+	}
+// Getters and Setters
 
 	public Integer getId() {
 		return id;
@@ -140,18 +161,22 @@ public class Organizer {
 		this.timestamp = timestamp;
 	}
 
+	@JsonIgnore
 	public System getSystem() {
 		return system;
 	}
 
+	@JsonIgnore
 	public void setSystem(System system) {
 		this.system = system;
 	}
 
+	@JsonIgnore
 	public List<Production> getProductions() {
 		return productions;
 	}
 
+	@JsonIgnore
 	public void setProductions(List<Production> productions) {
 		this.productions = productions;
 	}

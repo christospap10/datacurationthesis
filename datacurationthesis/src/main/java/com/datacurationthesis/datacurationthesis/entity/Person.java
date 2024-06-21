@@ -56,6 +56,30 @@ public class Person {
     @JsonIgnore
     private List<Image> images;
 
+    public Person() {
+    }
+
+    public Person(Integer id, String fullname, int systemId, LocalDateTime timestamp, String haircolor, String height, String eyecolor, String weight, List<String> languages, String description, String bio, LocalDateTime birthdate, List<String> roles, boolean isclaimed, ClaimingStatus claimingstatus, System system, List<Contribution> contributions, List<Image> images) {
+        this.id = id;
+        this.fullname = fullname;
+        this.systemId = systemId;
+        this.timestamp = timestamp;
+        this.haircolor = haircolor;
+        this.height = height;
+        this.eyecolor = eyecolor;
+        this.weight = weight;
+        this.languages = languages;
+        this.description = description;
+        this.bio = bio;
+        this.birthdate = birthdate;
+        this.roles = roles;
+        this.isclaimed = isclaimed;
+        this.claimingstatus = claimingstatus;
+        this.system = system;
+        this.contributions = contributions;
+        this.images = images;
+    }
+
     public int getId() {
         return this.id;
     }
@@ -180,26 +204,32 @@ public class Person {
         this.claimingstatus = claimingstatus;
     }
 
+    @JsonIgnore
     public System getSystem() {
         return this.system;
     }
 
+    @JsonIgnore
     public void setSystem(System system) {
         this.system = system;
     }
 
+    @JsonIgnore
     public List<Contribution> getContributions() {
         return this.contributions;
     }
 
+    @JsonIgnore
     public void setContributions(List<Contribution> contributions) {
         this.contributions = contributions;
     }
 
+    @JsonIgnore
     public List<Image> getImages() {
         return this.images;
     }
 
+    @JsonIgnore
     public void setImages(List<Image> images) {
         this.images = images;
     }

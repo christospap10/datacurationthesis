@@ -61,7 +61,26 @@ public class Production {
     @OneToMany(mappedBy = "production")
     private List<Event> events;
 
-    // Getters and Setters
+    public Production() {
+    }
+
+    public Production(int id, Integer organizerId, String title, String description, String url, String producer, String mediaurl, String duration, int systemId, LocalDateTime timestamp, Organizer organizer, System system, List<Contribution> contributions, List<Event> events) {
+        this.id = id;
+        this.organizerId = organizerId;
+        this.title = title;
+        this.description = description;
+        this.url = url;
+        this.producer = producer;
+        this.mediaurl = mediaurl;
+        this.duration = duration;
+        this.systemId = systemId;
+        this.timestamp = timestamp;
+        this.organizer = organizer;
+        this.system = system;
+        this.contributions = contributions;
+        this.events = events;
+    }
+// Getters and Setters
 
     public int getId() {
         return id;
