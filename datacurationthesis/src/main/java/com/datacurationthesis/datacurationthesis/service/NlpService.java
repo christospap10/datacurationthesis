@@ -7,10 +7,9 @@ import java.util.Properties;
 public class NlpService {
 
 	private StanfordCoreNLP pipeline;
-
 	public NlpService() {
 		Properties props = new Properties();
-		props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner");
+		props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,parse,depparse,coref,kbp,quote");
 		pipeline = new StanfordCoreNLP(props);
 	}
 
