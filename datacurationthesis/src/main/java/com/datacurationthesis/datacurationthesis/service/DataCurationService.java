@@ -1,6 +1,7 @@
 package com.datacurationthesis.datacurationthesis.service;
 
 import com.datacurationthesis.datacurationthesis.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,6 +10,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class DataCurationService {
+
+    @Autowired
+    private NlpService nlpService;
 
     private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("\\s{2,}");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("[^\\p{L}\\p{N}\\s]");
@@ -31,11 +35,18 @@ public class DataCurationService {
         return organizers.stream().map(this::cleanOrganizer).collect(Collectors.toList());
     }
 
+    public Organizer cleanSingleOrganzerData(Organizer organizer) {
+        return cleanOrganizer(organizer);
+    }
+
     private Organizer cleanOrganizer(Organizer organizer) {
         if (organizer.getName() != null) {
            organizer.setName(normalizeString(organizer.getName()));
         }
-        if (organizer.getAddress() != null){
+        if (organizer.getName().contains("r")) {
+            organizer.setName(normalizeString(organizer.getName().replace("r", "")));
+        }
+        if (organizer.getAddress() != null) {
            organizer.setAddress(normalizeString(organizer.getAddress()));
         }
         if (organizer.getEmail() != null && !validateEmail(organizer.getEmail())) {
