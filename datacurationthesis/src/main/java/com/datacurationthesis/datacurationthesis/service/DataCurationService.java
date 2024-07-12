@@ -1,10 +1,13 @@
 package com.datacurationthesis.datacurationthesis.service;
 
 import com.datacurationthesis.datacurationthesis.entity.*;
+import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -17,7 +20,8 @@ public class DataCurationService {
     private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("\\s{2,}");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("[^\\p{L}\\p{N}\\s]");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^(\\d{10}|\\d{12})$");
+    private static final Pattern INVALID_LETTER_PATTERN = Pattern.compile("\\s+[a-zA-Zα-ωΑ-Ω]\\s+");
 
     public String normalizeString(String str) {
        return str.trim().replaceAll(SPECIAL_CHARACTERS_PATTERN.pattern(), "").replaceAll(MULTIPLE_SPACES_PATTERN.pattern(), " ");
@@ -40,20 +44,37 @@ public class DataCurationService {
     }
 
     private Organizer cleanOrganizer(Organizer organizer) {
+        Map<String, List<String>> entities = new HashMap<>();
         if (organizer.getName() != null) {
-           organizer.setName(normalizeString(organizer.getName()));
-        }
-        if (organizer.getName().contains("r")) {
-            organizer.setName(normalizeString(organizer.getName().replace("r", "")));
+            // Normalize the string
+            String name = normalizeString(organizer.getName());
+            // Remove 'r' with spaces around it
+            name = INVALID_LETTER_PATTERN.matcher(name).replaceAll(" ");
+            // Remove any multiple spaces that might have been introduced
+            name = MULTIPLE_SPACES_PATTERN.matcher(name).replaceAll(" ");
+             entities = nlpService.extractEntities(name);
+            LoggerController.formattedInfo("Person Extracted entities: %s", entities);
+            organizer.setName(name.trim());
         }
         if (organizer.getAddress() != null) {
            organizer.setAddress(normalizeString(organizer.getAddress()));
+           String address = normalizeString(organizer.getAddress());
+           entities = nlpService.extractEntities(address);
+           LoggerController.formattedInfo("Organizer Address Extracted entities: %s", entities);
+           organizer.setAddress(address.trim());
+        }
+        if (organizer.getTown() != null) {
+            organizer.setTown(normalizeString(organizer.getTown()));
+            String town = normalizeString(organizer.getTown());
+            entities = nlpService.extractEntities(town);
+            LoggerController.formattedInfo("Organizer Town Extracted entities: %s", entities);
+            organizer.setTown(town.trim());
         }
         if (organizer.getEmail() != null && !validateEmail(organizer.getEmail())) {
-            organizer.setEmail(null);
+            organizer.setEmail("unknown");
         }
         if (organizer.getPhone() != null && !validatePhoneNumber(organizer.getPhone())) {
-            organizer.setPhone(null);
+            organizer.setPhone("unknown");
         }
         return organizer;
     }
