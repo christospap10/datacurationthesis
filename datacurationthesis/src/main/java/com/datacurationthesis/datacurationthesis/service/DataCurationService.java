@@ -17,6 +17,9 @@ public class DataCurationService {
     @Autowired
     private NlpService nlpService;
 
+    @Autowired
+    private SpellCheckService spellCheckService;
+
     private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("\\s{2,}");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("[^\\p{L}\\p{N}\\s]");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
@@ -48,12 +51,21 @@ public class DataCurationService {
         if (organizer.getName() != null) {
             // Normalize the string
             String name = normalizeString(organizer.getName());
-            // Remove 'r' with spaces around it
+
+            LoggerController.formattedInfo("Spell checked name: %s", name + " - " + spellCheckService.isValidWord(name));
+            // Remove all special characters
+            name = SPECIAL_CHARACTERS_PATTERN.matcher(name).replaceAll("");
+            // Remove random letter with spaces around it
             name = INVALID_LETTER_PATTERN.matcher(name).replaceAll(" ");
             // Remove any multiple spaces that might have been introduced
             name = MULTIPLE_SPACES_PATTERN.matcher(name).replaceAll(" ");
              entities = nlpService.extractEntities(name);
             LoggerController.formattedInfo("Person Extracted entities: %s", entities);
+            // Spell check
+            // spellCheckService.isValidWord(name);
+            if(!spellCheckService.isValidWord(name)) {
+                logInvalidWord(name, "Organizer", "name");
+            }
             organizer.setName(name.trim());
         }
         if (organizer.getAddress() != null) {
@@ -152,5 +164,9 @@ public class DataCurationService {
             production.setTitle(normalizeString(production.getTitle()));
         }
         return production;
+   }
+
+   private void logInvalidWord(String word, String entity, String field) {
+       LoggerController.info("Invalid word detected: " + word + " in " + entity + " entity, field: " + field);
    }
 }
