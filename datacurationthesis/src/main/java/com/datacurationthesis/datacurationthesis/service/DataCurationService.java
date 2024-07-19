@@ -51,7 +51,7 @@ public class DataCurationService {
         if (organizer.getName() != null) {
             // Normalize the string
             String name = normalizeString(organizer.getName());
-
+            String possibleNameReplacement;
             LoggerController.formattedInfo("Spell checked name: %s", name + " - " + spellCheckService.isValidWord(name));
             // Remove all special characters
             name = SPECIAL_CHARACTERS_PATTERN.matcher(name).replaceAll("");
@@ -59,12 +59,14 @@ public class DataCurationService {
             name = INVALID_LETTER_PATTERN.matcher(name).replaceAll(" ");
             // Remove any multiple spaces that might have been introduced
             name = MULTIPLE_SPACES_PATTERN.matcher(name).replaceAll(" ");
-             entities = nlpService.extractEntities(name);
+            entities = nlpService.extractEntities(name);
             LoggerController.formattedInfo("Person Extracted entities: %s", entities);
             // Spell check
-            // spellCheckService.isValidWord(name);
             if(!spellCheckService.isValidWord(name)) {
                 logInvalidWord(name, "Organizer", "name");
+                possibleNameReplacement = spellCheckService.autoCorrect(name);
+                LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s", possibleNameReplacement);
+                name = possibleNameReplacement;
             }
             organizer.setName(name.trim());
         }
