@@ -1,5 +1,6 @@
 package com.datacurationthesis.datacurationthesis.controller;
 
+import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
 import com.datacurationthesis.datacurationthesis.entity.Organizer;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.*;
@@ -7,10 +8,12 @@ import com.datacurationthesis.datacurationthesis.service.DataCurationService;
 import com.datacurationthesis.datacurationthesis.service.GreekSpellCkeckerService;
 import com.datacurationthesis.datacurationthesis.service.LevenshteinService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/datacuration/v1")
@@ -62,11 +65,12 @@ public class DataCurationController {
         return organizerRepository.save(organizer);
     }
 
-    @GetMapping("/testGreekService")
-    public void testGreekService() {
-        greekSpellCkeckerService.testGreekSpellCheck();
+    @GetMapping("/spellcheck")
+    public ResponseEntity<SpellCheckResponse> checkAndSuggest(@RequestParam("word") String word) {
+       SpellCheckResponse response = greekSpellCkeckerService.checkAndSuggestWord(word);
+        LoggerController.info("Result: " + response.toString());
+        return ResponseEntity.ok(response);
     }
-
 
     @GetMapping("/testLevenshtein")
     public void testLevenshtein() {

@@ -1,12 +1,13 @@
 package com.datacurationthesis.datacurationthesis.service;
 
+import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +19,8 @@ import java.util.List;
 
 @Service
 public class GreekSpellCkeckerService {
+
+
 
     public interface Hunspell extends Library {
         Hunspell INSTANCE = (Hunspell) Native.load("hunspell", Hunspell.class);
@@ -35,6 +38,12 @@ public class GreekSpellCkeckerService {
 
     @Value("${spellchecker.dicFilePath}")
     private Resource dicFileResource;
+
+    private final LevenshteinService levenshteinService;
+   @Autowired
+    public GreekSpellCkeckerService(LevenshteinService levenshteinService) {
+        this.levenshteinService = levenshteinService;
+    }
 
     @PostConstruct
     public void init() throws IOException {
@@ -96,19 +105,24 @@ public class GreekSpellCkeckerService {
         }
     }
 
+    // Method to check if a word is correct and suggest alternatives if not
+    public SpellCheckResponse checkAndSuggestWord(String word) {
+        boolean correct = isCorrect(word);
+        LoggerController.formattedInfo("Is the word '%s' correct? %s", word, correct);
+       List<String>  hunspellSuggestions = getSuggestions(word);
+       String levenshteinSuggestion = null;
+       if (!correct && hunspellSuggestions.isEmpty()) {
+           levenshteinSuggestion = levenshteinService.suggestClosestWord(word);
+           LoggerController.formattedInfo("No hunspell suggestions found.\n Levenshtein suggestion: %s", levenshteinSuggestion);
+       }
+       return new SpellCheckResponse(word, correct, hunspellSuggestions, levenshteinSuggestion);
+       }
+
     // A method to demonstrate the spell checker functionality
     public void testGreekSpellCheck() {
-        String[] words = {"καλημέρα", "καλημρα", "καλοκαίρι", "καλογηρία"};
+        String[] words = {"καλημέρα", "καλημρα", "καλοκαίρι", "καλογηρία", "απόγμα"};
         for (String word : words) {
-            boolean correct = isCorrect(word);
-            System.out.println("Is the word '" + word + "' correct? " + correct);
-
-            if (!correct) {
-                List<String> suggestions = getSuggestions(word);
-                System.out.println("Suggestions: " + suggestions);
-            } else {
-                System.out.println("The word '" + word + "' is correct.");
-            }
+           checkAndSuggestWord(word);
         }
     }
 
