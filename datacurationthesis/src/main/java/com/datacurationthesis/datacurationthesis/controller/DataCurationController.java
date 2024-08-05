@@ -4,6 +4,8 @@ import com.datacurationthesis.datacurationthesis.entity.Organizer;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.*;
 import com.datacurationthesis.datacurationthesis.service.DataCurationService;
+import com.datacurationthesis.datacurationthesis.service.GreekSpellCkeckerService;
+import com.datacurationthesis.datacurationthesis.service.LevenshteinService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,10 @@ public class DataCurationController {
 
     @Autowired
     private DataCurationService dataCurationService;
+    @Autowired
+    private GreekSpellCkeckerService greekSpellCkeckerService;
+    @Autowired
+    private LevenshteinService levenshteinService;
     @Autowired
     private OrganizerRepository organizerRepository;
     @Autowired
@@ -31,11 +37,12 @@ public class DataCurationController {
     @Autowired
     private ProductionRepository productionRepository;
 
+
     @GetMapping("/organizer")
     public Organizer getOrganizer(@RequestParam Integer id) {
         List<Organizer> organizers = new ArrayList<>();
-        Organizer organizer =  organizerRepository.findById(id).get();
-        Organizer organizer2 =  organizerRepository.findById(id).get();
+        Organizer organizer = organizerRepository.findById(id).get();
+        Organizer organizer2 = organizerRepository.findById(id).get();
         organizers.add(organizer);
         organizers.add(organizer2);
         LoggerController.info("Before cleaning: " + organizer.toString());
@@ -53,5 +60,16 @@ public class DataCurationController {
         dataCurationService.cleanSingleOrganzerData(organizer);
         LoggerController.info("Data cleaned: " + organizer.toString());
         return organizerRepository.save(organizer);
+    }
+
+    @GetMapping("/testGreekService")
+    public void testGreekService() {
+        greekSpellCkeckerService.testGreekSpellCheck();
+    }
+
+
+    @GetMapping("/testLevenshtein")
+    public void testLevenshtein() {
+        levenshteinService.testLevenshtein();
     }
 }

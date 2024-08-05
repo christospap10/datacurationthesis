@@ -69,6 +69,19 @@
 			<version>6.4</version>
 		</dependency>
 
+		<!-- JNA Dependency -->
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>5.12.1</version>
+		</dependency>
+		<!-- HunspellJNA Dependency -->
+		<dependency>
+			<groupId>dk.dren.hunspell</groupId>
+			<artifactId>hunspelljna</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
 			<artifactId>opennlp-tools</artifactId>
