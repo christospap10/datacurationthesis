@@ -19,6 +19,8 @@ public class DataCurationService {
 
     @Autowired
     private SpellCheckService spellCheckService;
+    @Autowired
+    private GreekSpellCkeckerService greekSpellCkeckerService;
 
     private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("\\s{2,}");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("[^\\p{L}\\p{N}\\s]");
