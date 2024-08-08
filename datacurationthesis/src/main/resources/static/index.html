@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Curator - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #4CAF50;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .header {
+            background-color: #fff;
+            color: #4CAF50;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .content h2 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        .content ul li {
+            margin-bottom: 10px;
+        }
+
+        .content a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .content a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f1f1f1;
+            width: calc(100% - 250px); /* Adjust width for sidebar */
+            margin-left: 250px; /* Align with the content */
+            position: relative; /* Ensure it stays at the bottom */
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 20px 0;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+<div class="sidebar">
+    <h2>Data Curator</h2>
+    <a href="index.html">Home</a>
+    <a href="organizer.html">Curate Organizer</a>
+    <a href="organizer.html">Batch Curate Organizers</a>
+</div>
+<div class="container">
+    <div class="header">
+        <h1>Welcome to the Data Curator Project</h1>
+    </div>
+    <div class="content">
+        <h2>About the Project</h2>
+        <p>This project is a part of a thesis for the International Hellenic University. The purpose of the Data Curator is to curate textual data for the Theatrical Plays Database, ensuring the data is accurate, normalized, and free of errors.</p>
+
+        <h2>How It Works</h2>
+        <p>The Data Curator application processes the data through several steps:</p>
+        <ul>
+            <li><strong>Normalization:</strong> Converts text to a standard format, removing special characters and ensuring consistency.</li>
+            <li><strong>Spell Checking:</strong> Identifies and corrects spelling errors using advanced algorithms and dictionaries.</li>
+            <li><strong>Entity Extraction:</strong> Uses Natural Language Processing (NLP) to extract meaningful entities such as names, places, and organizations.</li>
+            <li><strong>Validation:</strong> Ensures the data conforms to predefined rules and standards, marking or correcting invalid entries.</li>
+        </ul>
+
+        <h2>Purpose</h2>
+        <p>The main goal of this project is to enhance the quality of the data in the Theatrical Plays Database. By applying automated curation techniques, we can maintain a high standard of data integrity, which is crucial for research and reference purposes.</p>
+    </div>
+</div>
+
+<div class="footer">
+    <p>&copy; 2024 International Hellenic University. All rights reserved.</p>
+</div>
+</body>
+
+</html>

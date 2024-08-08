@@ -65,6 +65,12 @@ public class DataCurationController {
         return organizerRepository.save(organizer);
     }
 
+    @GetMapping("/organizers/clean")
+    public String cleanAllOrganizers() {
+        dataCurationService.cleanAllOrganizers();
+        return "Organizers Data cleaned.";
+    }
+
     @GetMapping("/spellcheck")
     public ResponseEntity<SpellCheckResponse> checkAndSuggest(@RequestParam("word") String word) {
        SpellCheckResponse response = greekSpellCkeckerService.checkAndSuggestWord(word);
@@ -75,5 +81,11 @@ public class DataCurationController {
     @GetMapping("/testLevenshtein")
     public void testLevenshtein() {
         levenshteinService.testLevenshtein();
+    }
+
+    @GetMapping("/testGreekSentence")
+    public SpellCheckResponse testGreekSentence() {
+        SpellCheckResponse response = greekSpellCkeckerService.testGreekSpellCheck();
+        return response;
     }
 }
