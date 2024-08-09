@@ -138,4 +138,19 @@ public class Venue {
     public void setUserVenues(List<UserVenue> userVenues) {
         this.userVenues = userVenues;
     }
+
+    @Override
+    public String toString() {
+        return "Venue{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", address='" + address + '\'' +
+                ", systemid=" + systemid +
+                ", timestamp=" + timestamp +
+                ", isClaimed=" + isClaimed +
+                ", system=" + system +
+                ", events=" + events +
+                ", userVenues=" + userVenues +
+                '}';
+    }
 }

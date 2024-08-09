@@ -5,6 +5,7 @@ import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import org.apache.juli.logging.Log;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
+import org.languagetool.language.AmericanEnglish;
 import org.languagetool.language.English;
 import org.languagetool.language.Greek;
 import org.languagetool.rules.RuleMatch;
@@ -26,7 +27,7 @@ public class SpellCheckService {
 
     public SpellCheckService() {
         this.greekLanguageTool = new JLanguageTool(new Greek());
-        this.englishLanguageTool = new JLanguageTool(new English());
+        this.englishLanguageTool = new JLanguageTool(new AmericanEnglish());
     }
 
     public boolean isValidWord(String word) {
@@ -56,6 +57,22 @@ public class SpellCheckService {
         allSuggestions.addAll(matches.stream().map(RuleMatch::getSuggestedReplacements).flatMap(List::stream).toList());
         LoggerController.formattedInfo("All suggestions: %s", allSuggestions.toString());
         return correctedText;
+        } catch (IOException e) {
+            LoggerController.formattedError("Exception while checking if word is valid", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String autoCorrectEnglish(String text) {
+        try {
+            boolean isEnglish = isEnglishText(text);
+            List<RuleMatch> matches = isEnglish ? englishLanguageTool.check(text): greekLanguageTool.check(text);
+            List<String> allSuggestions = new ArrayList<>();
+            String correctedText = applyCorrections(text, matches);
+            LoggerController.formattedInfo("Suggested corrections: %s", matches.toString());
+            allSuggestions.addAll(matches.stream().map(RuleMatch::getSuggestedReplacements).flatMap(List::stream).toList());
+            LoggerController.formattedInfo("All suggestions: %s", allSuggestions.toString());
+            return correctedText;
         } catch (IOException e) {
             LoggerController.formattedError("Exception while checking if word is valid", e.getMessage());
             throw new RuntimeException(e);

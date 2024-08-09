@@ -2,6 +2,7 @@ package com.datacurationthesis.datacurationthesis.controller;
 
 import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
 import com.datacurationthesis.datacurationthesis.entity.Organizer;
+import com.datacurationthesis.datacurationthesis.entity.Venue;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.*;
 import com.datacurationthesis.datacurationthesis.service.DataCurationService;
@@ -65,10 +66,26 @@ public class DataCurationController {
         return organizerRepository.save(organizer);
     }
 
+
+    @PutMapping("/venue/update")
+    public Venue updateVenue(@RequestParam Integer id) {
+        Venue venue = venueRepository.findById(id).get();
+        LoggerController.info("Before cleaning venue: " + venue.toString());
+        dataCurationService.cleanVenue(venue);
+        LoggerController.info("Venue Data cleaned: " + venue.toString());
+        return venueRepository.save(venue);
+    }
+
     @GetMapping("/organizers/clean")
     public String cleanAllOrganizers() {
         dataCurationService.cleanAllOrganizers();
         return "Organizers Data cleaned.";
+    }
+
+    @GetMapping("/venues/clean")
+    public String cleanAllVenues() {
+        dataCurationService.cleanAllVenues();
+        return "Venues Data cleaned.";
     }
 
     @GetMapping("/spellcheck")

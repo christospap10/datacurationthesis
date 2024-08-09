@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Curator - Organizer</title>
+    <title>Data Curator - Venue</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,7 +42,7 @@
             color: #4CAF50;
             font-weight: bold;
             font-size: 18px;
-            margin-right: 20px; /* Align to the right */
+            margin-right: 20px;
             transition: color 0.3s ease;
         }
 
@@ -128,29 +128,30 @@
     <h1>Data Curator</h1>
     <a href="index.html">Home</a>
 </div>
+
 <div class="container">
-    <h1>Curate Organizer</h1>
-    <label for="organizerId">Enter Organizer ID:</label>
-    <input type="text" id="organizerId" placeholder="Organizer ID" />
-    <button onclick="updateOrganizer()">Start Curate Organizer</button>
+    <h1>Curate Venue</h1>
+    <label for="venueId">Enter Venue ID:</label>
+    <input type="text" id="venueId" placeholder="Venue ID" />
+    <button onclick="updateVenue()">Start Curate Venue</button>
 
     <div class="response" id="response"></div>
 </div>
 
 <div class="container">
-    <h1>Batch Curate Organizers</h1>
-    <button onclick="batchUpdateOrganizers()">Start Batch</button>
+    <h1>Batch Curate Venues</h1>
+    <button onclick="batchUpdateVenues()">Start Batch</button>
 
     <div class="response" id="batchResponse"></div>
 </div>
 
 <script>
-        async function updateOrganizer() {
-            const organizerId = document.getElementById('organizerId').value;
+        async function updateVenue() {
+            const venueId = document.getElementById('venueId').value;
             const responseDiv = document.getElementById('response');
 
-            if (!organizerId) {
-                responseDiv.innerHTML = '<p style="color: red;">Please enter a valid Organizer ID.</p>';
+            if (!venueId) {
+                responseDiv.innerHTML = '<p style="color: red;">Please enter a valid Venue ID.</p>';
                 return;
             }
 
@@ -158,36 +159,36 @@
             responseDiv.innerHTML = '<div class="loader"></div>';
 
             try {
-                const response = await fetch(`http://localhost:8080/api/datacuration/v1/organizer/update?id=${organizerId}`, {
+                const response = await fetch(`http://localhost:8080/api/datacuration/v1/venue/update?id=${venueId}`, {
                     method: 'PUT'
                 });
 
                 if (!response.ok) {
-                    responseDiv.innerHTML = '<p style="color: red;">Error: Could not update the organizer.</p>';
+                    responseDiv.innerHTML = '<p style="color: red;">Error: Could not update the venue.</p>';
                     return;
                 }
 
                 const data = await response.json();
-                responseDiv.innerHTML = `<p style="color: green;">Organizer updated successfully:</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseDiv.innerHTML = `<p style="color: green;">Venue updated successfully:</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
 
             } catch (error) {
                 responseDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
             }
         }
 
-        async function batchUpdateOrganizers() {
+        async function batchUpdateVenues() {
             const batchResponseDiv = document.getElementById('batchResponse');
 
             // Show loading spinner
             batchResponseDiv.innerHTML = '<div class="loader"></div>';
 
             try {
-                const response = await fetch(`http://localhost:8080/api/datacuration/v1/organizers/clean`, {
+                const response = await fetch(`http://localhost:8080/api/datacuration/v1/venues/clean`, {
                     method: 'GET'
                 });
 
                 if (!response.ok) {
-                    batchResponseDiv.innerHTML = '<p style="color: red;">Error: Could not batch update the organizers.</p>';
+                    batchResponseDiv.innerHTML = '<p style="color: red;">Error: Could not batch update the venues.</p>';
                     return;
                 }
 
@@ -198,7 +199,7 @@
                 batchResponseDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
             }
         }
-    </script>
+</script>
 </body>
 
 </html>
