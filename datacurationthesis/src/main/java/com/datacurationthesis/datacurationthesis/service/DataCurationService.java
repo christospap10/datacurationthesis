@@ -105,14 +105,14 @@ public class DataCurationService {
                 possibleNameReplacement = spellCheckService.autoCorrect(name);
                 LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s", possibleNameReplacement);
                 name = possibleNameReplacement;
-                organizer.setName(name.trim().toUpperCase());
+                organizer.setName(name.trim());
             }
             if (spellCheckService.isEnglishText(name)) {
                 LoggerController.formattedInfo("English word detected: %s", name);
                 possibleNameReplacement = spellCheckService.autoCorrectEnglish(name);
                 LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s", possibleNameReplacement);
                 name = possibleNameReplacement;
-                organizer.setName(name.trim().toUpperCase());
+                organizer.setName(name.trim());
             }
             if (spellCheckService.isGreekText(name)) {
                 LoggerController.info("Applying Levenshtein distance");
@@ -155,12 +155,13 @@ public class DataCurationService {
             }
 
             LoggerController.formattedInfo("Finally curated name: %s", name);
-            organizer.setName(name.trim().toUpperCase());
+            organizer.setName(StringUtils.capitalizeWords(name.trim()));
         }
 
         // Clean and curate the address field
         if (organizer.getAddress() != null) {
             String address = organizer.getAddress();
+            address = normalizeAddressString(address);
             address = StringUtils.capitalizeWords(address);
             LoggerController.formattedInfo("START: Normalized address: %s", address);
 
@@ -217,7 +218,7 @@ public class DataCurationService {
             }
 
             LoggerController.formattedInfo("Finally curated address: %s", address);
-            organizer.setAddress(normalizeAddressString(address.trim()));
+            organizer.setAddress((address.trim()));
         }
 
         // Clean and curate the town field
@@ -226,7 +227,24 @@ public class DataCurationService {
             String town = normalizeString(organizer.getTown());
             entities = nlpService.extractEntities(town);
             LoggerController.formattedInfo("Organizer Town Extracted entities: %s", entities);
-            organizer.setTown(town.trim().toUpperCase());
+
+            String possibleTownReplacement = null;
+            if (!spellCheckService.isValidWord(town)) {
+                logInvalidWord(town, "Organizer", "town");
+                possibleTownReplacement = spellCheckService.autoCorrect(town);
+                LoggerController.formattedInfo("Organizer town corrected by spell checking service to: %s", possibleTownReplacement);
+                town = possibleTownReplacement;
+                organizer.setTown(town.trim());
+            }
+
+            if (spellCheckService.isGreekText(town)) {
+                LoggerController.info("Applying Levenshtein distance");
+                SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(town);
+                String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
+                LoggerController.formattedInfo("Organizer town corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+                town = levenshteinSuggestion;
+            }
+            organizer.setTown(StringUtils.capitalizeWords(town.trim()));
         }
 
         // Validate and clean other fields

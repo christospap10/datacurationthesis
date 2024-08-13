@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/datacuration/v1")
@@ -105,4 +104,5 @@ public class DataCurationController {
         SpellCheckResponse response = greekSpellCkeckerService.testGreekSpellCheck();
         return response;
     }
+
 }
