@@ -1,21 +1,22 @@
 package com.datacurationthesis.datacurationthesis.service;
 
+import com.datacurationthesis.datacurationthesis.controller.OllamaController;
 import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
 import com.datacurationthesis.datacurationthesis.entity.*;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.OrganizerRepository;
 import com.datacurationthesis.datacurationthesis.repository.VenueRepository;
 import com.datacurationthesis.datacurationthesis.util.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.lang.System;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DataCurationService {
@@ -29,6 +30,8 @@ public class DataCurationService {
     private GreekSpellCkeckerService greekSpellCkeckerService;
     @Autowired
     private LevenshteinService levenshteinService;
+    @Autowired
+    private OllamaController ollamaController;
 
     private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("\\s{2,}");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("[^\\p{L}\\p{N}\\s]");
@@ -41,9 +44,9 @@ public class DataCurationService {
     private VenueRepository venueRepository;
 
     public String normalizeString(String str) {
-       return str.trim().replaceAll(SPECIAL_CHARACTERS_PATTERN.pattern(), "").replaceAll(MULTIPLE_SPACES_PATTERN.pattern(), " ");
+        return str.trim().replaceAll(SPECIAL_CHARACTERS_PATTERN.pattern(), "")
+                .replaceAll(MULTIPLE_SPACES_PATTERN.pattern(), " ");
     }
-
 
     public String normalizeAddressString(String str) {
         // Trim the string to remove leading and trailing spaces
@@ -55,7 +58,6 @@ public class DataCurationService {
         // Return the normalized address string
         return str;
     }
-
 
     public boolean validateEmail(String email) {
         return EMAIL_PATTERN.matcher(email).matches();
@@ -84,12 +86,14 @@ public class DataCurationService {
 
         // Clean and curate the name field
         if (organizer.getName() != null) {
+            mergeDuplicates(organizer);
             String name = normalizeString(organizer.getName());
             name = StringUtils.capitalizeWords(name);
             LoggerController.formattedInfo("START: Normalized name: %s", name);
 
             String possibleNameReplacement = null;
-            LoggerController.formattedInfo("Spell checked name: %s", name + " - " + spellCheckService.isValidWord(name));
+            LoggerController.formattedInfo("Spell checked name: %s",
+                    name + " - " + spellCheckService.isValidWord(name));
 
             // Remove special characters, random letters with spaces, and multiple spaces
             name = SPECIAL_CHARACTERS_PATTERN.matcher(name).replaceAll("");
@@ -103,14 +107,16 @@ public class DataCurationService {
             if (!spellCheckService.isValidWord(name)) {
                 logInvalidWord(name, "Organizer", "name");
                 possibleNameReplacement = spellCheckService.autoCorrect(name);
-                LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s", possibleNameReplacement);
+                LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s",
+                        possibleNameReplacement);
                 name = possibleNameReplacement;
                 organizer.setName(name.trim());
             }
             if (spellCheckService.isEnglishText(name)) {
                 LoggerController.formattedInfo("English word detected: %s", name);
                 possibleNameReplacement = spellCheckService.autoCorrectEnglish(name);
-                LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s", possibleNameReplacement);
+                LoggerController.formattedInfo("Organizer name corrected by spell checking service to: %s",
+                        possibleNameReplacement);
                 name = possibleNameReplacement;
                 organizer.setName(name.trim());
             }
@@ -118,16 +124,19 @@ public class DataCurationService {
                 LoggerController.info("Applying Levenshtein distance");
                 SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(name);
                 String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
-                LoggerController.formattedInfo("Organizer name corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+                LoggerController.formattedInfo("Organizer name corrected by Levenshtein distance to: %s",
+                        levenshteinSuggestion);
 
                 LoggerController.info("Applying Hamming distance algorithm!");
                 String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(name);
-                LoggerController.formattedInfo("Organizer name corrected by Hamming distance to: %s", hammingDistanceSuggestion);
+                LoggerController.formattedInfo("Organizer name corrected by Hamming distance to: %s",
+                        hammingDistanceSuggestion);
 
                 System.out.println("Choose a correction for the organizer name:");
                 System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
                 System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
-                System.out.print("Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
+                System.out.print(
+                        "Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
 
                 Scanner scanner = new Scanner(System.in);
                 String input = scanner.nextLine().trim();
@@ -166,14 +175,16 @@ public class DataCurationService {
             LoggerController.formattedInfo("START: Normalized address: %s", address);
 
             String possibleAddressReplacement = null;
-            LoggerController.formattedInfo("Spell checked address: %s", address + " - " + spellCheckService.isValidWord(address));
+            LoggerController.formattedInfo("Spell checked address: %s",
+                    address + " - " + spellCheckService.isValidWord(address));
             entities = nlpService.extractEntities(address);
             LoggerController.formattedInfo("Organizer Address Extracted entities: %s", entities);
 
             if (!spellCheckService.isValidWord(address)) {
                 logInvalidWord(address, "Organizer", "address");
                 possibleAddressReplacement = spellCheckService.autoCorrect(address);
-                LoggerController.formattedInfo("Organizer address corrected by spell checking service to: %s", possibleAddressReplacement);
+                LoggerController.formattedInfo("Organizer address corrected by spell checking service to: %s",
+                        possibleAddressReplacement);
                 address = possibleAddressReplacement;
                 organizer.setAddress(address.trim());
             }
@@ -181,16 +192,19 @@ public class DataCurationService {
                 LoggerController.info("Applying Levenshtein distance");
                 SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(address);
                 String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
-                LoggerController.formattedInfo("Organizer address corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+                LoggerController.formattedInfo("Organizer address corrected by Levenshtein distance to: %s",
+                        levenshteinSuggestion);
 
                 LoggerController.info("Applying Hamming distance algorithm!");
                 String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(address);
-                LoggerController.formattedInfo("Organizer address corrected by Hamming distance to: %s", hammingDistanceSuggestion);
+                LoggerController.formattedInfo("Organizer address corrected by Hamming distance to: %s",
+                        hammingDistanceSuggestion);
 
                 System.out.println("Choose a correction for the organizer address:");
                 System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
                 System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
-                System.out.print("Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
+                System.out.print(
+                        "Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
 
                 Scanner scanner = new Scanner(System.in);
                 String input = scanner.nextLine().trim();
@@ -198,10 +212,12 @@ public class DataCurationService {
                 if (!input.isEmpty()) {
                     if (input.equals("1")) {
                         address = levenshteinSuggestion;
-                        LoggerController.formattedInfo("Organizer address corrected by Levenshtein distance to: %s", address);
+                        LoggerController.formattedInfo("Organizer address corrected by Levenshtein distance to: %s",
+                                address);
                     } else if (input.equals("2")) {
                         address = hammingDistanceSuggestion;
-                        LoggerController.formattedInfo("Organizer address corrected by Hamming distance to: %s", address);
+                        LoggerController.formattedInfo("Organizer address corrected by Hamming distance to: %s",
+                                address);
                     } else {
                         System.out.print("Enter your custom correction (or press enter to keep the original): ");
                         String customCorrection = scanner.nextLine().trim();
@@ -209,7 +225,8 @@ public class DataCurationService {
                             address = customCorrection;
                             LoggerController.formattedInfo("Organizer address manually corrected to: %s", address);
                         } else {
-                            LoggerController.formattedInfo("No corrections applied. Keeping original address: %s", address);
+                            LoggerController.formattedInfo("No corrections applied. Keeping original address: %s",
+                                    address);
                         }
                     }
                 } else {
@@ -232,7 +249,8 @@ public class DataCurationService {
             if (!spellCheckService.isValidWord(town)) {
                 logInvalidWord(town, "Organizer", "town");
                 possibleTownReplacement = spellCheckService.autoCorrect(town);
-                LoggerController.formattedInfo("Organizer town corrected by spell checking service to: %s", possibleTownReplacement);
+                LoggerController.formattedInfo("Organizer town corrected by spell checking service to: %s",
+                        possibleTownReplacement);
                 town = possibleTownReplacement;
                 organizer.setTown(town.trim());
             }
@@ -241,7 +259,8 @@ public class DataCurationService {
                 LoggerController.info("Applying Levenshtein distance");
                 SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(town);
                 String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
-                LoggerController.formattedInfo("Organizer town corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+                LoggerController.formattedInfo("Organizer town corrected by Levenshtein distance to: %s",
+                        levenshteinSuggestion);
                 town = levenshteinSuggestion;
             }
             organizer.setTown(StringUtils.capitalizeWords(town.trim()));
@@ -258,241 +277,265 @@ public class DataCurationService {
             organizer.setDoy(normalizeAddressString(organizer.getDoy()).trim().toUpperCase());
         }
 
-        return mergeDuplicates(organizer);
+        return organizer;
     }
-
 
     public List<Venue> cleanVenueData(List<Venue> venues) {
         return venues.stream().map(this::cleanVenue).collect(Collectors.toList());
     }
 
-   public void  cleanAllVenues() {
+    public void cleanAllVenues() {
         List<Venue> allVenues = venueRepository.findAll();
         List<Venue> processedVenues = cleanVenueData(allVenues);
         venueRepository.saveAll(processedVenues);
         LoggerController.formattedInfo("Processed venues: %s", processedVenues);
-   }
+    }
 
-   public Venue cleanVenue(Venue venue) {
-       Map<String, List<String>> entities = new HashMap<>();
+    public Venue cleanVenue(Venue venue) {
+        Map<String, List<String>> entities = new HashMap<>();
 
-       if (venue.getTitle() != null) {
-           // Normalize the string
-           if (venue.getTitle().contains("&")) {
-               venue.setTitle(venue.getTitle().replace("&", "και"));
-           }
-           String title = normalizeString(venue.getTitle());
-           title = StringUtils.capitalizeWords(title);
-           LoggerController.formattedInfo("START: Normalized title: %s", title);
-           String possibleTitleReplacement = null;
+        if (venue.getTitle() != null) {
+            mergeDuplicates(venue);
+            // Normalize the string
+            if (venue.getTitle().contains("&")) {
+                venue.setTitle(venue.getTitle().replace("&", "και"));
+            }
+            String title = normalizeString(venue.getTitle());
+            title = StringUtils.capitalizeWords(title);
+            LoggerController.formattedInfo("START: Normalized title: %s", title);
+            String possibleTitleReplacement = null;
 
-           // Spell check
-           LoggerController.formattedInfo("Spell checked title: %s", title + " - " + spellCheckService.isValidWord(title));
-           // Remove all special characters
-           title = SPECIAL_CHARACTERS_PATTERN.matcher(title).replaceAll("");
-           // Remove random letter with spaces around it
-           title = INVALID_LETTER_PATTERN.matcher(title).replaceAll(" ");
-           // Remove any multiple spaces that might have been introduced
-           title = MULTIPLE_SPACES_PATTERN.matcher(title).replaceAll(" ");
+            // Spell check
+            LoggerController.formattedInfo("Spell checked title: %s",
+                    title + " - " + spellCheckService.isValidWord(title));
+            // Remove all special characters
+            title = SPECIAL_CHARACTERS_PATTERN.matcher(title).replaceAll("");
+            // Remove random letter with spaces around it
+            title = INVALID_LETTER_PATTERN.matcher(title).replaceAll(" ");
+            // Remove any multiple spaces that might have been introduced
+            title = MULTIPLE_SPACES_PATTERN.matcher(title).replaceAll(" ");
 
-           // Entity extraction
-           entities = nlpService.extractEntities(title);
-           LoggerController.formattedInfo("Venue Extracted entities: %s", entities);
+            // Entity extraction
+            entities = nlpService.extractEntities(title);
+            LoggerController.formattedInfo("Venue Extracted entities: %s", entities);
 
-           // Spell check and correction
-           if (!spellCheckService.isValidWord(title)) {
-               logInvalidWord(title, "Venue", "title");
-               possibleTitleReplacement = spellCheckService.autoCorrect(title);
-               LoggerController.formattedInfo("Venue title corrected by spell checking service to: %s", possibleTitleReplacement);
-               title = possibleTitleReplacement;
-               venue.setTitle(title.trim());
-           }
-           if (spellCheckService.isEnglishText(title)) {
-               LoggerController.formattedInfo("English word detected: %s", title);
-               possibleTitleReplacement = spellCheckService.autoCorrectEnglish(title);
-               LoggerController.formattedInfo("Venue title corrected by spell checking service to: %s", possibleTitleReplacement);
-               title = possibleTitleReplacement;
-               venue.setTitle(title.trim());
-           }
-           if (spellCheckService.isGreekText(title)) {
-               LoggerController.info("Applying Levenshtein distance");
-               SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(title);
-               String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
-               LoggerController.formattedInfo("Venue title corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+            // Spell check and correction
+            if (!spellCheckService.isValidWord(title)) {
+                logInvalidWord(title, "Venue", "title");
+                possibleTitleReplacement = spellCheckService.autoCorrect(title);
+                LoggerController.formattedInfo("Venue title corrected by spell checking service to: %s",
+                        possibleTitleReplacement);
+                title = possibleTitleReplacement;
+                venue.setTitle(title.trim());
+            }
+            if (spellCheckService.isEnglishText(title)) {
+                LoggerController.formattedInfo("English word detected: %s", title);
+                possibleTitleReplacement = spellCheckService.autoCorrectEnglish(title);
+                LoggerController.formattedInfo("Venue title corrected by spell checking service to: %s",
+                        possibleTitleReplacement);
+                title = possibleTitleReplacement;
+                venue.setTitle(title.trim());
+            }
+            if (spellCheckService.isGreekText(title)) {
+                LoggerController.info("Applying Levenshtein distance");
+                SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(title);
+                String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
+                LoggerController.formattedInfo("Venue title corrected by Levenshtein distance to: %s",
+                        levenshteinSuggestion);
 
-               // Applying Hamming distance
-               LoggerController.info("Applying Hamming distance algorithm!");
-               String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(title);
-               LoggerController.formattedInfo("Venue title corrected by Hamming distance to: %s", hammingDistanceSuggestion);
+                // Applying Hamming distance
+                LoggerController.info("Applying Hamming distance algorithm!");
+                String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(title);
+                LoggerController.formattedInfo("Venue title corrected by Hamming distance to: %s",
+                        hammingDistanceSuggestion);
 
-               // Compare suggestions and ask the user to choose
-               System.out.println("Choose a correction for the venue title:");
-               System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
-               System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
-               System.out.print("Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
+                // Compare suggestions and ask the user to choose
+                System.out.println("Choose a correction for the venue title:");
+                System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
+                System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
+                System.out.print(
+                        "Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
 
-               Scanner scanner = new Scanner(System.in);
-               String input = scanner.nextLine().trim();
+                Scanner scanner = new Scanner(System.in);
+                String input = scanner.nextLine().trim();
 
-               if (!input.isEmpty()) {
-                   if (input.equals("1")) {
-                       title = levenshteinSuggestion;
-                       LoggerController.formattedInfo("Venue title corrected by Levenshtein distance to: %s", title);
-                   } else if (input.equals("2")) {
-                       title = hammingDistanceSuggestion;
-                       LoggerController.formattedInfo("Venue title corrected by Hamming distance to: %s", title);
-                   } else {
-                       System.out.print("Enter your custom correction (or press enter to keep the original): ");
-                       String customCorrection = scanner.nextLine().trim();
-                       if (!customCorrection.isEmpty()) {
-                           title = customCorrection;
-                           LoggerController.formattedInfo("Venue title manually corrected to: %s", title);
-                       } else {
-                           LoggerController.formattedInfo("No corrections applied. Keeping original title: %s", title);
-                       }
-                   }
-               } else {
-                   LoggerController.formattedInfo("No corrections applied. Keeping original title: %s", title);
-               }
-           }
+                if (!input.isEmpty()) {
+                    if (input.equals("1")) {
+                        title = levenshteinSuggestion;
+                        LoggerController.formattedInfo("Venue title corrected by Levenshtein distance to: %s", title);
+                    } else if (input.equals("2")) {
+                        title = hammingDistanceSuggestion;
+                        LoggerController.formattedInfo("Venue title corrected by Hamming distance to: %s", title);
+                    } else {
+                        System.out.print("Enter your custom correction (or press enter to keep the original): ");
+                        String customCorrection = scanner.nextLine().trim();
+                        if (!customCorrection.isEmpty()) {
+                            title = customCorrection;
+                            LoggerController.formattedInfo("Venue title manually corrected to: %s", title);
+                        } else {
+                            LoggerController.formattedInfo("No corrections applied. Keeping original title: %s", title);
+                        }
+                    }
+                } else {
+                    LoggerController.formattedInfo("No corrections applied. Keeping original title: %s", title);
+                }
+            }
 
-           LoggerController.formattedInfo("Finally curated title: %s", title);
-           // Set the title
-           venue.setTitle(title.trim());
-       }
+            LoggerController.formattedInfo("Finally curated title: %s", title);
+            // Set the title
+            venue.setTitle(title.trim());
+        }
 
-       if (venue.getAddress() != null) {
-           // Normalize the string
-           String address = venue.getAddress();
-           address = StringUtils.capitalizeWords(address);
-           LoggerController.formattedInfo("START: Normalized address: %s", address);
-           String possibleAddressReplacement = null;
+        if (!venue.getAddress().isEmpty()) {
+            // Normalize the string
+            String address = venue.getAddress();
+            address = StringUtils.capitalizeWords(address);
+            LoggerController.formattedInfo("START: Normalized address: %s", address);
+            String possibleAddressReplacement = null;
 
-           // Spell check
-           LoggerController.formattedInfo("Spell checked address: %s", address + " - " + spellCheckService.isValidWord(address));
-           // Remove random letter with spaces around it
-           address = INVALID_LETTER_PATTERN.matcher(address).replaceAll(" ");
-           // Remove any multiple spaces that might have been introduced
-           address = MULTIPLE_SPACES_PATTERN.matcher(address).replaceAll(" ");
+            // Spell check
+            LoggerController.formattedInfo("Spell checked address: %s",
+                    address + " - " + spellCheckService.isValidWord(address));
+            // Remove random letter with spaces around it
+            address = INVALID_LETTER_PATTERN.matcher(address).replaceAll(" ");
+            // Remove any multiple spaces that might have been introduced
+            address = MULTIPLE_SPACES_PATTERN.matcher(address).replaceAll(" ");
 
-           // Entity extraction
-           entities = nlpService.extractEntities(address);
-           LoggerController.formattedInfo("Venue Address Extracted entities: %s", entities);
+            // Entity extraction
+            entities = nlpService.extractEntities(address);
+            LoggerController.formattedInfo("Venue Address Extracted entities: %s", entities);
 
-           // Spell check and correction
-           if (!spellCheckService.isValidWord(address)) {
-               logInvalidWord(address, "Venue", "address");
-               possibleAddressReplacement = spellCheckService.autoCorrect(address);
-               LoggerController.formattedInfo("Venue address corrected by spell checking service to: %s", possibleAddressReplacement);
-               address = possibleAddressReplacement;
-               venue.setAddress(address.trim());
-           }
-           if (spellCheckService.isEnglishText(address)) {
-               LoggerController.formattedInfo("English word detected: %s", address);
-               possibleAddressReplacement = spellCheckService.autoCorrectEnglish(address);
-               LoggerController.formattedInfo("Venue address corrected by spell checking service to: %s", possibleAddressReplacement);
-               address = possibleAddressReplacement;
-               venue.setAddress(address.trim());
-           }
-           if (spellCheckService.isGreekText(address)) {
-               LoggerController.info("Applying Levenshtein distance");
-               SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(address);
-               String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
-               LoggerController.formattedInfo("Venue address corrected by Levenshtein distance to: %s", levenshteinSuggestion);
+            // Spell check and correction
+            if (!spellCheckService.isValidWord(address)) {
+                logInvalidWord(address, "Venue", "address");
+                possibleAddressReplacement = spellCheckService.autoCorrect(address);
+                LoggerController.formattedInfo("Venue address corrected by spell checking service to: %s",
+                        possibleAddressReplacement);
+                address = possibleAddressReplacement;
+                venue.setAddress(address.trim());
+            }
+            if (spellCheckService.isEnglishText(address)) {
+                LoggerController.formattedInfo("English word detected: %s", address);
+                possibleAddressReplacement = spellCheckService.autoCorrectEnglish(address);
+                LoggerController.formattedInfo("Venue address corrected by spell checking service to: %s",
+                        possibleAddressReplacement);
+                address = possibleAddressReplacement;
+                venue.setAddress(address.trim());
+            }
+            if (spellCheckService.isGreekText(address)) {
+                LoggerController.info("Applying Levenshtein distance");
+                SpellCheckResponse levenshteinResponse = greekSpellCkeckerService.checkAndSuggestSentence(address);
+                String levenshteinSuggestion = levenshteinResponse.getLevenshteinSuggestion();
+                LoggerController.formattedInfo("Venue address corrected by Levenshtein distance to: %s",
+                        levenshteinSuggestion);
 
-               // Applying Hamming distance
-               LoggerController.info("Applying Hamming distance algorithm!");
-               String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(address);
-               LoggerController.formattedInfo("Venue address corrected by Hamming distance to: %s", hammingDistanceSuggestion);
+                // Applying Hamming distance
+                LoggerController.info("Applying Hamming distance algorithm!");
+                String hammingDistanceSuggestion = levenshteinService.hammingDistanceForSentence(address);
+                LoggerController.formattedInfo("Venue address corrected by Hamming distance to: %s",
+                        hammingDistanceSuggestion);
 
-               // Compare suggestions and ask the user to choose
-               System.out.println("Choose a correction for the venue address:");
-               System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
-               System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
-               System.out.print("Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
+                // Compare suggestions and ask the user to choose
+                System.out.println("Choose a correction for the venue address:");
+                System.out.printf("1. Levenshtein suggestion: %s\n", levenshteinSuggestion);
+                System.out.printf("2. Hamming distance suggestion: %s\n", hammingDistanceSuggestion);
+                System.out.print(
+                        "Enter the number of the suggestion you want to apply (or press enter to keep the original): ");
 
-               Scanner scanner = new Scanner(System.in);
-               String input = scanner.nextLine().trim();
+                Scanner scanner = new Scanner(System.in);
+                String input = scanner.nextLine().trim();
 
-               if (!input.isEmpty()) {
-                   if (input.equals("1")) {
-                       address = levenshteinSuggestion;
-                       LoggerController.formattedInfo("Venue address corrected by Levenshtein distance to: %s", address);
-                   } else if (input.equals("2")) {
-                       address = hammingDistanceSuggestion;
-                       LoggerController.formattedInfo("Venue address corrected by Hamming distance to: %s", address);
-                   } else {
-                       System.out.print("Enter your custom correction (or press enter to keep the original): ");
-                       String customCorrection = scanner.nextLine().trim();
-                       if (!customCorrection.isEmpty()) {
-                           address = customCorrection;
-                           LoggerController.formattedInfo("Venue address manually corrected to: %s", address);
-                       } else {
-                           LoggerController.formattedInfo("No corrections applied. Keeping original address: %s", address);
-                       }
-                   }
-               } else {
-                   LoggerController.formattedInfo("No corrections applied. Keeping original address: %s", address);
-               }
-           }
+                if (!input.isEmpty()) {
+                    if (input.equals("1")) {
+                        address = levenshteinSuggestion;
+                        LoggerController.formattedInfo("Venue address corrected by Levenshtein distance to: %s",
+                                address);
+                    } else if (input.equals("2")) {
+                        address = hammingDistanceSuggestion;
+                        LoggerController.formattedInfo("Venue address corrected by Hamming distance to: %s", address);
+                    } else {
+                        System.out.print("Enter your custom correction (or press enter to keep the original): ");
+                        String customCorrection = scanner.nextLine().trim();
+                        if (!customCorrection.isEmpty()) {
+                            address = customCorrection;
+                            LoggerController.formattedInfo("Venue address manually corrected to: %s", address);
+                        } else {
+                            LoggerController.formattedInfo("No corrections applied. Keeping original address: %s",
+                                    address);
+                        }
+                    }
+                } else {
+                    LoggerController.formattedInfo("No corrections applied. Keeping original address: %s", address);
+                }
+            }
 
-           LoggerController.formattedInfo("Finally curated address: %s", address);
-           // Set the address
-           venue.setAddress(address.trim());
-       }
+            LoggerController.formattedInfo("Finally curated address: %s", address);
+            // Set the address
+            venue.setAddress(address.trim());
+        } else if (venue.getAddress() == null || venue.getAddress().isEmpty()) {
+            LoggerController.formattedInfo(
+                    "Address is missing for venue: " + venue.getTitle() + "\nUsing LLM to find the address...");
+            String extractedAddress = ollamaController.getOpenAIresponse(venue.getTitle());
+            if (extractedAddress != null) {
+                LoggerController.formattedInfo("Updating venue address to: %s", extractedAddress);
+                venue.setAddress(extractedAddress);
+            } else {
+                LoggerController.formattedError("Failed to update address for venue: %s", venue.getTitle());
+            }
+        }
 
-       return mergeDuplicates(venue);
-   }
+        return venue;
+    }
 
-   public List<Person> cleanPersonData(List<Person> people) {
+    public List<Person> cleanPersonData(List<Person> people) {
         return people.stream().map(this::cleanPerson).collect(Collectors.toList());
-   }
+    }
 
-   private Person cleanPerson(Person person) {
-       if (person.getFullname() != null) {
-           person.setFullname(normalizeString(person.getFullname()));
-       }
-       return person;
-   }
+    private Person cleanPerson(Person person) {
+        if (person.getFullname() != null) {
+            person.setFullname(normalizeString(person.getFullname()));
+        }
+        return person;
+    }
 
-   public List<Role> cleanRoleData(List<Role> roles) {
+    public List<Role> cleanRoleData(List<Role> roles) {
         return roles.stream().map(this::cleanRole).collect(Collectors.toList());
-   }
+    }
 
-   private Role cleanRole(Role role) {
-       if (role.getRole1() != null) {
-           role.setRole1(normalizeString(role.getRole1()));
-       }
-       return role;
-   }
+    private Role cleanRole(Role role) {
+        if (role.getRole1() != null) {
+            role.setRole1(normalizeString(role.getRole1()));
+        }
+        return role;
+    }
 
-   public List<Contribution> cleanContributionData(List<Contribution> contributions) {
+    public List<Contribution> cleanContributionData(List<Contribution> contributions) {
         return contributions.stream().map(this::cleanContribution).collect(Collectors.toList());
-   }
+    }
 
-   private Contribution cleanContribution(Contribution contribution) {
-       if (contribution.getSubRole() != null) {
-           contribution.setSubRole(normalizeString(contribution.getSubRole()));
-       }
-       return contribution;
-   }
+    private Contribution cleanContribution(Contribution contribution) {
+        if (contribution.getSubRole() != null) {
+            contribution.setSubRole(normalizeString(contribution.getSubRole()));
+        }
+        return contribution;
+    }
 
-   public List<Event> cleanEventData(List<Event> events) {
+    public List<Event> cleanEventData(List<Event> events) {
         return events.stream().map(this::cleanEvent).collect(Collectors.toList());
-   }
+    }
 
-   private Event cleanEvent(Event event) {
+    private Event cleanEvent(Event event) {
         if (event.getPriceRange() != null) {
             event.setPriceRange(normalizeString(event.getPriceRange()));
         }
         return event;
-   }
+    }
 
-   public  List<Production> cleanProductionData(List<Production> productions) {
+    public List<Production> cleanProductionData(List<Production> productions) {
         return productions.stream().map(this::cleanProduction).collect(Collectors.toList());
-   }
+    }
 
-   private Production cleanProduction(Production production) {
+    private Production cleanProduction(Production production) {
         if (production.getDescription() != null) {
             production.setDescription(normalizeString(production.getDescription()));
         }
@@ -503,29 +546,46 @@ public class DataCurationService {
             production.setTitle(normalizeString(production.getTitle()));
         }
         return production;
-   }
+    }
 
-   private void logInvalidWord(String word, String entity, String field) {
-       LoggerController.info("Invalid word detected: " + word + " in " + entity + " entity, field: " + field);
-   }
+    private void logInvalidWord(String word, String entity, String field) {
+        LoggerController.info("Invalid word detected: " + word + " in " + entity + " entity, field: " + field);
+    }
 
-   private Organizer mergeDuplicates(Organizer organizer) {
-        List<Organizer> duplicates = organizerRepository.findByNameAndAddress(organizer.getName(), organizer.getAddress());
+    private Organizer mergeDuplicates(Organizer organizer) {
+        List<Organizer> duplicates = organizerRepository.findByNameAndAddress(organizer.getName(),
+                organizer.getAddress());
 
         if (duplicates.size() > 1) {
-           Organizer primary = duplicates.get(0);
+            Organizer primary = duplicates.stream().filter(duplcate -> !duplcate.getProductions().isEmpty()).findFirst()
+                    .orElse(duplicates.get(0));
 
-           for (Organizer duplicate: duplicates.subList(1, duplicates.size())) {
-               primary = mergeFields(primary, duplicate);
-               organizerRepository.delete(duplicate);
-               LoggerController.formattedInfo("Deleted duplicate organizer with ID: %d", duplicate.getId());
-           }
-           return organizerRepository.save(primary);
+            for (Organizer duplicate : duplicates) {
+                if (duplicate != primary) {
+                    // Merge and delete if the duplicate has no active relations
+                    if (duplicate.getProductions().isEmpty()) {
+                        primary = mergeFields(primary, duplicate);
+                        organizerRepository.delete(duplicate);
+                        LoggerController.formattedInfo("Deleted duplicate organizer with ID: %d", duplicate.getId());
+                    } else {
+                        // If the duplicate has active relations, update its address to match the
+                        // primary
+                        LoggerController.formattedInfo(
+                                "Skipped deletion for organizer with ID: %d due to active relations with Productions",
+                                duplicate.getId());
+                        duplicate.setAddress(primary.getAddress());
+                        organizerRepository.save(duplicate);
+                    }
+                }
+            }
+            return organizerRepository.save(primary);
+        } else {
+            LoggerController.formattedInfo("No duplicates found for organizer: %s ", organizer.getName());
         }
         return organizer;
-   }
+    }
 
-   private Organizer mergeFields(Organizer primary, Organizer duplicate) {
+    private Organizer mergeFields(Organizer primary, Organizer duplicate) {
         if (primary.getEmail() == null && duplicate.getEmail() != null) {
             primary.setEmail(duplicate.getEmail());
         }
@@ -543,21 +603,38 @@ public class DataCurationService {
         }
 
         return primary;
-   }
+    }
 
     public Venue mergeDuplicates(Venue venue) {
         List<Venue> duplicates = venueRepository.findByTitle(venue.getTitle());
-        LoggerController.formattedInfo("Duplicate venues found: %d", duplicates.size());
         LoggerController.formattedInfo("Venue title: %s", venue.getTitle());
         LoggerController.formattedInfo("Venue address: %s", venue.getAddress());
+        LoggerController.formattedInfo("Duplicate venues found: %d", duplicates.size());
 
         if (duplicates.size() > 1) {
-            Venue primary = duplicates.get(0);  // Now should be the one with the most complete data
-
-            for (Venue duplicate : duplicates.subList(1, duplicates.size())) {
-                primary = mergeFields(primary, duplicate);
-                venueRepository.delete(duplicate);
-                LoggerController.formattedInfo("Deleted duplicate venue with ID: %d", duplicate.getId());
+            Venue primary = duplicates.stream()
+                    .max(Comparator.comparingInt(v -> v.getAddress() != null ? v.getAddress().length() : 0))
+                    .orElse(duplicates.get(0));
+            LoggerController.formattedInfo("Primary venue found in mergeDuplicates method: %s", primary.getId());
+            LoggerController.formattedInfo("Removing input venue from the duplicates: %s", venue.getId());
+            duplicates.remove(venue);
+            LoggerController.formattedInfo("Duplicate venues: %s", duplicates);
+            for (Venue duplicate : duplicates) {
+                if (duplicate != primary) {
+                    if (duplicate.getEvents().isEmpty() && duplicate.getUserVenues().isEmpty()) {
+                        primary = mergeFields(primary, duplicate);
+                        venueRepository.delete(duplicate);
+                        LoggerController.formattedInfo("Deleted duplicate venue with ID: %d", duplicate.getId());
+                    } else {
+                        LoggerController.formattedInfo(
+                                "Skipped deletion for venue with ID: %d due to active\nrelations with Events or UserVenues",
+                                duplicate.getId());
+                    }
+                    if (!duplicate.getEvents().isEmpty() || !duplicate.getUserVenues().isEmpty()) {
+                        duplicate.setAddress(primary.getAddress());
+                        venueRepository.save(duplicate);
+                    }
+                }
             }
             // Save the primary record after merging
             return venueRepository.save(primary);
@@ -583,7 +660,4 @@ public class DataCurationService {
         }
         return primary;
     }
-
-
-
 }
