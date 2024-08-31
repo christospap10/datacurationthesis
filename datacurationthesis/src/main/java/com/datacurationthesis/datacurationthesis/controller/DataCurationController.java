@@ -1,6 +1,7 @@
 package com.datacurationthesis.datacurationthesis.controller;
 
 import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
+import com.datacurationthesis.datacurationthesis.entity.Contribution;
 import com.datacurationthesis.datacurationthesis.entity.Organizer;
 import com.datacurationthesis.datacurationthesis.entity.Venue;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
@@ -8,12 +9,16 @@ import com.datacurationthesis.datacurationthesis.repository.*;
 import com.datacurationthesis.datacurationthesis.service.DataCurationService;
 import com.datacurationthesis.datacurationthesis.service.GreekSpellCkeckerService;
 import com.datacurationthesis.datacurationthesis.service.LevenshteinService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/datacuration/v1")
@@ -28,7 +33,7 @@ public class DataCurationController {
     @Autowired
     private OrganizerRepository organizerRepository;
     @Autowired
-    private ContibutionRepository contibutionRepository;
+    private ContibutionRepository contributionRepository;
     @Autowired
     private EventRepository eventRepository;
     @Autowired
@@ -39,7 +44,6 @@ public class DataCurationController {
     private VenueRepository venueRepository;
     @Autowired
     private ProductionRepository productionRepository;
-
 
     @GetMapping("/organizer")
     public Organizer getOrganizer(@RequestParam Integer id) {
@@ -65,7 +69,6 @@ public class DataCurationController {
         return organizerRepository.save(organizer);
     }
 
-
     @PutMapping("/venue/update")
     public Venue updateVenue(@RequestParam Integer id) {
         Venue venue = venueRepository.findById(id).get();
@@ -73,6 +76,47 @@ public class DataCurationController {
         dataCurationService.cleanVenue(venue);
         LoggerController.info("Venue Data cleaned: " + venue.toString());
         return venueRepository.save(venue);
+    }
+
+    @GetMapping("/contribution/update")
+    public Contribution updateContribution(@RequestParam Integer id) {
+        Contribution contribution = contributionRepository.findById(id).get();
+        LoggerController.info("Before cleaning contribution: " + contribution.toString());
+        dataCurationService.cleanSingleContribution(contribution);
+        LoggerController.info("Contribution Data cleaned: " + contribution.toString());
+        return contribution;
+    }
+
+    @GetMapping("/contribution/deserialize")
+    public void deserializeSubroles() {
+            String jsonString = """
+                {
+                  "Συντελεστές": {
+                    "Σκηνοθεσία": ["Γιώργος Καπουτζίδης"],
+                    "Βοηθός Σκηνοθέτη": ["Γιάννης Καλαβριανός"],
+                    "Σκηνικά": ["Κατερίνα Παπαγεωργίου"],
+                    "Κοστούμια": ["Βασίλης Ζούκας"],
+                    "Φωτισμοί": ["Χριστίνα Θανάσουλα"],
+                    "Μουσική": ["Δημήτρης Καμαρωτός"],
+                    "Φωτογραφίες": ["Πάνος Γιαννακόπουλος"],
+                    "Διεύθυνση Παραγωγής": ["Μαριάννα Μπάρλα"],
+                    "Επικοινωνία": ["Ανζελίνα Νταλιάνη"]
+                  }
+                }
+                """;
+
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Map<String, List<String>>> result = objectMapper.readValue(jsonString, new TypeReference<>() {});
+                Map<String, List<String>> contributorsMap = result.get("Συντελεστές");
+                System.out.println("Deserialized contributors:");
+                contributorsMap.forEach((role, names) -> {
+                    System.out.println(role + ": " + names);
+                });         
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Error deserializing json: " + e.getMessage());
+            }
     }
 
     @GetMapping("/organizers/clean")
@@ -89,7 +133,7 @@ public class DataCurationController {
 
     @GetMapping("/spellcheck")
     public ResponseEntity<SpellCheckResponse> checkAndSuggest(@RequestParam("word") String word) {
-       SpellCheckResponse response = greekSpellCkeckerService.checkAndSuggestWord(word);
+        SpellCheckResponse response = greekSpellCkeckerService.checkAndSuggestWord(word);
         LoggerController.info("Result: " + response.toString());
         return ResponseEntity.ok(response);
     }

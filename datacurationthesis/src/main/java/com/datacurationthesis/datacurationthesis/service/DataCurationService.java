@@ -2,12 +2,19 @@ package com.datacurationthesis.datacurationthesis.service;
 
 import com.datacurationthesis.datacurationthesis.controller.OllamaController;
 import com.datacurationthesis.datacurationthesis.dto.SpellCheckResponse;
-import com.datacurationthesis.datacurationthesis.entity.*;
+import com.datacurationthesis.datacurationthesis.entity.Contribution;
+import com.datacurationthesis.datacurationthesis.entity.Event;
+import com.datacurationthesis.datacurationthesis.entity.Organizer;
+import com.datacurationthesis.datacurationthesis.entity.Person;
+import com.datacurationthesis.datacurationthesis.entity.Production;
+import com.datacurationthesis.datacurationthesis.entity.Role;
+import com.datacurationthesis.datacurationthesis.entity.Venue;
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.OrganizerRepository;
 import com.datacurationthesis.datacurationthesis.repository.VenueRepository;
 import com.datacurationthesis.datacurationthesis.util.StringUtils;
-import java.lang.System;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +23,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -513,10 +522,60 @@ public class DataCurationService {
         return contributions.stream().map(this::cleanContribution).collect(Collectors.toList());
     }
 
-    private Contribution cleanContribution(Contribution contribution) {
-        if (contribution.getSubRole() != null) {
+    public Contribution cleanSingleContribution(Contribution contribution) {
+        return cleanContribution(contribution);
+    }
+
+    public Contribution cleanContribution(Contribution contribution) {
+        if (contribution.getSubRole() != null && !contribution.getSubRole().isEmpty()) {
             contribution.setSubRole(normalizeString(contribution.getSubRole()));
         }
+
+        if (contribution.getSubRole() == null || contribution.getSubRole().isEmpty()) {
+            Production production = contribution.getProduction();
+            String url = production.getUrl();
+            Person person = contribution.getPerson();
+            String fullname = person.getFullname();
+
+            System.out.println("Production: " + production.toString());
+            System.out.println("Production URL: " + url);
+            System.out.println("Person: " + person.toString());
+            System.out.println("Person fullname: " + fullname);
+
+            // Fetch subroles from LLM
+            ResponseEntity<Map<String, String>> subrolesJsonResponse = ollamaController.getSubrolesFromLLM(url);
+            LoggerController.formattedInfo("SubrolesJSONResponse from cleancontribution method: ",
+                    subrolesJsonResponse.toString());
+
+            try {
+                if (subrolesJsonResponse.getStatusCode() == HttpStatus.OK) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+
+                    // Deserialize the response body into a Map<String, List<String>>
+                    Map<String, List<String>> subrolesMap = objectMapper.convertValue(subrolesJsonResponse.getBody(),
+                            new TypeReference<Map<String, List<String>>>() {
+                            });
+
+                    // Check if the person's fullname is present in any of the subroles
+                    boolean fullnameExists = subrolesMap.values().stream()
+                            .flatMap(List::stream)
+                            .anyMatch(name -> name.equals(fullname));
+
+                    if (fullnameExists) {
+                        System.out.println("The fullname exists in the subroles JSON response.");
+                    } else {
+                        System.out.println("The fullname does not exist in the subroles JSON response.");
+                    }
+                } else {
+                    System.out.println(
+                            "Failed to retrieve subroles. HTTP status: " + subrolesJsonResponse.getStatusCode());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Error parsing the subroles JSON.");
+            }
+        }
+
         return contribution;
     }
 

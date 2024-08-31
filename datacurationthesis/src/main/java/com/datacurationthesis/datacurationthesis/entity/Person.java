@@ -17,7 +17,7 @@ public class Person {
     @Column(nullable = false)
     private String fullname;
 
-    @Column(name = "systemid",nullable = false)
+    @Column(name = "systemid", nullable = false)
     private int systemId;
 
     @Column(nullable = false)
@@ -59,7 +59,10 @@ public class Person {
     public Person() {
     }
 
-    public Person(Integer id, String fullname, int systemId, LocalDateTime timestamp, String haircolor, String height, String eyecolor, String weight, List<String> languages, String description, String bio, LocalDateTime birthdate, List<String> roles, boolean isclaimed, ClaimingStatus claimingstatus, System system, List<Contribution> contributions, List<Image> images) {
+    public Person(Integer id, String fullname, int systemId, LocalDateTime timestamp, String haircolor, String height,
+            String eyecolor, String weight, List<String> languages, String description, String bio,
+            LocalDateTime birthdate, List<String> roles, boolean isclaimed, ClaimingStatus claimingstatus,
+            System system, List<Contribution> contributions, List<Image> images) {
         this.id = id;
         this.fullname = fullname;
         this.systemId = systemId;
@@ -80,11 +83,11 @@ public class Person {
         this.images = images;
     }
 
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -112,11 +115,11 @@ public class Person {
         this.timestamp = timestamp;
     }
 
-    public String getHairColor() {
+    public String getHaircolor() {
         return this.haircolor;
     }
 
-    public void setHairColor(String haircolor) {
+    public void setHaircolor(String haircolor) {
         this.haircolor = haircolor;
     }
 
@@ -128,11 +131,11 @@ public class Person {
         this.height = height;
     }
 
-    public String getEyeColor() {
+    public String getEyecolor() {
         return this.eyecolor;
     }
 
-    public void setEyeColor(String eyecolor) {
+    public void setEyecolor(String eyecolor) {
         this.eyecolor = eyecolor;
     }
 
@@ -184,54 +187,73 @@ public class Person {
         this.roles = roles;
     }
 
-    public boolean isIsClaimed() {
+    public boolean isIsclaimed() {
         return this.isclaimed;
     }
 
-    public boolean getIsClaimed() {
+    public boolean getIsclaimed() {
         return this.isclaimed;
     }
 
-    public void setIsClaimed(boolean isclaimed) {
+    public void setIsclaimed(boolean isclaimed) {
         this.isclaimed = isclaimed;
     }
 
-    public ClaimingStatus getClaimingStatus() {
+    public ClaimingStatus getClaimingstatus() {
         return this.claimingstatus;
     }
 
-    public void setClaimingStatus(ClaimingStatus claimingstatus) {
+    public void setClaimingstatus(ClaimingStatus claimingstatus) {
         this.claimingstatus = claimingstatus;
     }
 
-    @JsonIgnore
     public System getSystem() {
         return this.system;
     }
 
-    @JsonIgnore
     public void setSystem(System system) {
         this.system = system;
     }
 
-    @JsonIgnore
     public List<Contribution> getContributions() {
         return this.contributions;
     }
 
-    @JsonIgnore
     public void setContributions(List<Contribution> contributions) {
         this.contributions = contributions;
     }
 
-    @JsonIgnore
     public List<Image> getImages() {
         return this.images;
     }
 
-    @JsonIgnore
     public void setImages(List<Image> images) {
         this.images = images;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", fullname='" + fullname + '\'' +
+                ", systemId=" + systemId +
+                ", timestamp=" + timestamp +
+                ", haircolor='" + haircolor + '\'' +
+                ", height='" + height + '\'' +
+                ", eyecolor='" + eyecolor + '\'' +
+                ", weight='" + weight + '\'' +
+                ", languages=" + languages +
+                ", description='" + description + '\'' +
+                ", bio='" + bio + '\'' +
+                ", birthdate=" + birthdate +
+                ", roles=" + roles +
+                ", isclaimed=" + isclaimed +
+                ", claimingstatus=" + claimingstatus +
+                // Avoid recursion by only including the ID of the system and contributions
+                // ", systemId=" + (system != null ? system.getId() : "null") +
+                // ", contributionsCount=" + (contributions != null ? contributions.size() : 0) +
+                // ", imagesCount=" + (images != null ? images.size() : 0) +
+                '}';
     }
 
 }

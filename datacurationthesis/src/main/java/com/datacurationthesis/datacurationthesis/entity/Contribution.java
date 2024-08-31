@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 @Entity
-@Table(name = "contributions")  // Ensure the table name is correct
+@Table(name = "contributions") // Ensure the table name is correct
 public class Contribution {
 
     @Id
@@ -32,7 +33,7 @@ public class Contribution {
     // Navigational Properties
     @ManyToOne
     @JoinColumn(name = "peopleid", insertable = false, updatable = false)
-    @JsonIgnore
+    // @JsonIgnore
     private Person person;
 
     @ManyToOne
@@ -53,7 +54,8 @@ public class Contribution {
     public Contribution() {
     }
 
-    public Contribution(int id, int personId, int productionId, int roleId, String subrole, int systemId, LocalDateTime timestamp, Person person, Production production, Role role, System system) {
+    public Contribution(int id, int personId, int productionId, int roleId, String subrole, int systemId,
+            LocalDateTime timestamp, Person person, Production production, Role role, System system) {
         this.id = id;
         this.personId = personId;
         this.productionId = productionId;
@@ -124,43 +126,62 @@ public class Contribution {
         this.timestamp = timestamp;
     }
 
-    @JsonIgnore
     public Person getPerson() {
         return person;
     }
 
-    @JsonIgnore
     public void setPerson(Person person) {
         this.person = person;
     }
 
-    @JsonIgnore
     public Production getProduction() {
         return production;
     }
 
-    @JsonIgnore
     public void setProduction(Production production) {
         this.production = production;
     }
 
-    @JsonIgnore
     public Role getRole() {
         return role;
     }
 
-    @JsonIgnore
     public void setRole(Role role) {
         this.role = role;
     }
 
-    @JsonIgnore
     public System getSystem() {
         return system;
     }
 
-    @JsonIgnore
     public void setSystem(System system) {
         this.system = system;
     }
+
+    public String getSubrole() {
+        return this.subrole;
+    }
+
+    public void setSubrole(String subrole) {
+        this.subrole = subrole;
+    }
+
+    @Override
+    public String toString() {
+        return "Contribution{" +
+                "id=" + id +
+                ", personId=" + personId +
+                ", productionId=" + productionId +
+                ", roleId=" + roleId +
+                ", subrole='" + subrole + '\'' +
+                ", systemId=" + systemId +
+                ", timestamp=" + timestamp +
+                // Avoid recursion by only including the ID or a summary of related entities
+                ", personFulname=" + (person != null ? person.getFullname() : "null") +
+                ", productionId=" + (production != null ? production.getId() : "null") +
+                ", roleId=" + (role != null ? role.getId() : "null") +
+                ", systemId=" + (system != null ? system.getId() : "null") +
+                '}';
+    }
+
 }
