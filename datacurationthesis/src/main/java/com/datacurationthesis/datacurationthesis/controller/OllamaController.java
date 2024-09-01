@@ -2,9 +2,12 @@ package com.datacurationthesis.datacurationthesis.controller;
 
 import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.timeout.TimeoutException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,14 +18,13 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 public class OllamaController {
@@ -112,118 +114,63 @@ public class OllamaController {
     // The method should take the url from the productionId and return a json with
     // the subroles of the production
 
-    public ResponseEntity<Map<String, String>> getSubrolesFromLLM(@RequestParam String url) {
+    public Map<String, List<String>> getSubrolesFromLLM(@RequestParam String url) {
+
+        Map<String, List<String>> contributorsMap = new HashMap<>();
+        // try {
+        String message = """
+                Παρακαλώ απαντήστε **μόνο** με ένα αντικείμενο JSON που περιέχει τους συντελεστές (Συντελεστές) της παράστασης {url}.
+                συμπεριλαμβανομένων των ονομάτων των ατόμων που ανήκουν σε κάθε ρόλο.
+                Δεν χρειάζονται άλλες εξηγήσεις ή κείμενο.
+                """;
+        PromptTemplate promptTemplate = new PromptTemplate(message);
+        Prompt prompt = promptTemplate.create(Map.of("url", url));
+        LoggerController.formattedInfo("Prompt sent to LLM: " + prompt.toString());
+
+        ChatResponse response = openAiChatClient.prompt(prompt).call().chatResponse();
+        String fullResponse = response.getResult().getOutput().getContent();
+        // Clean the response
+        String cleanedResponse = fullResponse
+                .replace("```json", "")
+                .replace("```", "")
+                .trim();
+
+        LoggerController.formattedInfo("Cleaned Response from LLM: " + cleanedResponse);
+        // Deserialize the json object
         try {
-            String message = """
-                    Παρακαλώ απαντήστε **μόνο** με ένα αντικείμενο JSON που περιέχει τους συντελεστές (subroles) της παράστασης {url}.
-                    συμπεριλαμβανομένων των ονομάτων των ατόμων που ανήκουν σε κάθε ρόλο.
-                    Δεν χρειάζονται άλλες εξηγήσεις ή κείμενο.
-                    """;
-            PromptTemplate promptTemplate = new PromptTemplate(message);
-            Prompt prompt = promptTemplate.create(Map.of("url", url));
-            LoggerController.formattedInfo("Prompt sent to LLM: " + prompt.toString());
-
-            ChatResponse response = openAiChatClient.prompt(prompt).call().chatResponse();
-            String fullResponse = response.getResult().getOutput().getContent();
-            // Clean the response
-            String cleanedResponse = fullResponse
-                    .replace("```json", "")
-                    .replace("```", "")
-                    .trim();
-
-            LoggerController.formattedInfo("Cleaned Response from LLM: " + cleanedResponse);
-
-            // Parse the cleaned JSON response
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> subRolesMap = objectMapper.readValue(cleanedResponse, new TypeReference<>() {
+            JsonNode rootNode = objectMapper.readTree(cleanedResponse);
+            JsonNode contributorsNode = rootNode.get("Συντελεστές");
+
+            contributorsNode.fields().forEachRemaining(entry -> {
+                String role = entry.getKey();
+                JsonNode valueNode = entry.getValue();
+
+                if (valueNode.isArray()) {
+                    List<String> names = objectMapper.convertValue(valueNode, new TypeReference<>() {
+                    });
+                    contributorsMap.put(role, names);
+                } else if (valueNode.isTextual()) {
+                    contributorsMap.put(role, Collections.singletonList(valueNode.asText()));
+                }
             });
-
-            if (subRolesMap.isEmpty()) {
-                LoggerController.formattedInfo("Subroles JSON is empty");
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            LoggerController.formattedInfo("Subroles extracted: " + subRolesMap.toString());
-            return new ResponseEntity<>(subRolesMap, HttpStatus.OK);
-
-        } catch (TimeoutException e) {
-            LoggerController.formattedError("Response timed out. Please try again later!", e.getMessage());
-            Map<String, String> errorResponse = new HashMap<>();
-            return new ResponseEntity<>(errorResponse, HttpStatus.REQUEST_TIMEOUT);
+            System.out.println("Deserialized contributors:");
+            contributorsMap.forEach((role, names) -> {
+                System.out.println(role + ": " + names);
+            });
+            // Map<String, Map<String, List<String>>> result =
+            // objectMapper.readValue(cleanedResponse, new TypeReference<>() {});
+            // contributorsMap = result.get("Συντελεστές");
+            // System.out.println("Deserialized contributors:");
+            // contributorsMap.forEach((role, names) -> {
+            // System.out.println(role + ": " + names);
+            // });
         } catch (Exception e) {
-            LoggerController.formattedError("Error processing JSON response: " + e.getMessage(), e);
-            Map<String, String> errorResponse = new HashMap<>();
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            System.err.println("Error deserializing json: " + e.getMessage());
         }
+        return contributorsMap;
+
     }
-
-    // public ResponseEntity<Map<String, String>> getSubrolesFromLLM(@RequestParam
-    // String url) {
-    // try {
-    // String message = """
-    // Παρακαλώ απαντήστε **μόνο** με ένα αντικείμενο JSON που περιέχει τους
-    // συντελεστές (subroles) της παράστασης {url},
-    // συμπεριλαμβανομένων των ονομάτων των ατόμων που ανήκουν σε κάθε ρόλο.
-    // Δεν χρειάζονται άλλες εξηγήσεις ή κείμενο.
-    // """;
-    // PromptTemplate promptTemplate = new PromptTemplate(message);
-    // Prompt prompt = promptTemplate.create(Map.of("url", url));
-    // LoggerController.formattedInfo("Prompt sent to LLM: " + prompt.toString());
-
-    // ChatResponse response =
-    // openAiChatClient.prompt(prompt).call().chatResponse();
-    // String fullResponse = response.getResult().getOutput().getContent();
-
-    // // Clean the response
-    // String cleanedResponse = fullResponse
-    // .replace("```json", "")
-    // .replace("```", "")
-    // .trim();
-
-    // LoggerController.formattedInfo("Cleaned Response from LLM: " +
-    // cleanedResponse);
-
-    // // Parse the cleaned JSON response
-    // ObjectMapper objectMapper = new ObjectMapper();
-    // JsonNode jsonNode = objectMapper.readTree(cleanedResponse);
-
-    // // Extract subroles as key-value pairs
-    // Map<String, String> subRolesMap = new HashMap<>();
-    // JsonNode subRolesArray = jsonNode.get("subroles");
-
-    // if (subRolesArray.isArray()) {
-    // for (JsonNode subRoleNode : subRolesArray) {
-    // String subRoleEntry = subRoleNode.asText();
-    // String[] parts = subRoleEntry.split(":", 2);
-    // if (parts.length == 2) {
-    // subRolesMap.put(parts[0].trim(), parts[1].trim());
-    // }
-    // }
-    // }
-
-    // if (subRolesMap.isEmpty()) {
-    // LoggerController.formattedInfo("Subroles json is empty");
-    // return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    // }
-
-    // LoggerController.formattedInfo("Subroles extracted: ",
-    // subRolesMap.toString());
-    // return new ResponseEntity<>(subRolesMap, HttpStatus.OK);
-
-    // } catch (TimeoutException e) {
-    // LoggerController.formattedError("Response timed out. Please try again
-    // later!", e.getMessage());
-    // Map<String, String> errorResponse = new HashMap<>();
-    // errorResponse.put("error", "Response timed out. Please try again later!");
-    // return new ResponseEntity<>(errorResponse, HttpStatus.REQUEST_TIMEOUT);
-    // } catch (Exception e) {
-    // LoggerController.formattedError("Error processing JSON response: " +
-    // e.getMessage(), e);
-    // Map<String, String> errorResponse = new HashMap<>();
-    // errorResponse.put("error", "An error occurred while processing the JSON
-    // response.");
-    // return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
-    // }
 
 }

@@ -22,6 +22,7 @@ public class Contribution {
     @Column(name = "roleid", nullable = false)
     private int roleId;
 
+    @Column(name = "subrole")
     private String subrole;
 
     @Column(name = "systemid", nullable = false)
@@ -100,14 +101,6 @@ public class Contribution {
 
     public void setRoleId(int roleId) {
         this.roleId = roleId;
-    }
-
-    public String getSubRole() {
-        return subrole;
-    }
-
-    public void setSubRole(String subrole) {
-        this.subrole = subrole;
     }
 
     public int getSystemId() {

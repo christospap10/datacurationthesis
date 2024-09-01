@@ -13,8 +13,6 @@ import com.datacurationthesis.datacurationthesis.logger.LoggerController;
 import com.datacurationthesis.datacurationthesis.repository.OrganizerRepository;
 import com.datacurationthesis.datacurationthesis.repository.VenueRepository;
 import com.datacurationthesis.datacurationthesis.util.StringUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -23,8 +21,6 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -527,11 +523,11 @@ public class DataCurationService {
     }
 
     public Contribution cleanContribution(Contribution contribution) {
-        if (contribution.getSubRole() != null && !contribution.getSubRole().isEmpty()) {
-            contribution.setSubRole(normalizeString(contribution.getSubRole()));
+        if (contribution.getSubrole() != null && !contribution.getSubrole().isEmpty()) {
+            contribution.setSubrole(normalizeString(contribution.getSubrole()));
         }
 
-        if (contribution.getSubRole() == null || contribution.getSubRole().isEmpty()) {
+        if (contribution.getSubrole() == null || contribution.getSubrole().isEmpty()) {
             Production production = contribution.getProduction();
             String url = production.getUrl();
             Person person = contribution.getPerson();
@@ -543,36 +539,23 @@ public class DataCurationService {
             System.out.println("Person fullname: " + fullname);
 
             // Fetch subroles from LLM
-            ResponseEntity<Map<String, String>> subrolesJsonResponse = ollamaController.getSubrolesFromLLM(url);
-            LoggerController.formattedInfo("SubrolesJSONResponse from cleancontribution method: ",
-                    subrolesJsonResponse.toString());
-
-            try {
-                if (subrolesJsonResponse.getStatusCode() == HttpStatus.OK) {
-                    ObjectMapper objectMapper = new ObjectMapper();
-
-                    // Deserialize the response body into a Map<String, List<String>>
-                    Map<String, List<String>> subrolesMap = objectMapper.convertValue(subrolesJsonResponse.getBody(),
-                            new TypeReference<Map<String, List<String>>>() {
-                            });
-
-                    // Check if the person's fullname is present in any of the subroles
-                    boolean fullnameExists = subrolesMap.values().stream()
-                            .flatMap(List::stream)
-                            .anyMatch(name -> name.equals(fullname));
-
-                    if (fullnameExists) {
-                        System.out.println("The fullname exists in the subroles JSON response.");
-                    } else {
-                        System.out.println("The fullname does not exist in the subroles JSON response.");
+            Map<String, List<String>> subrolesMap = ollamaController.getSubrolesFromLLM(url);
+            StringBuilder newSubrole = new StringBuilder();
+            subrolesMap.forEach((role, names) -> {
+                if (names.contains(fullname)) {
+                    if (newSubrole.length() > 0) {
+                        newSubrole.append(" , ");
                     }
-                } else {
-                    System.out.println(
-                            "Failed to retrieve subroles. HTTP status: " + subrolesJsonResponse.getStatusCode());
+                    newSubrole.append(role);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Error parsing the subroles JSON.");
+            });
+
+            if (newSubrole.length() > 0) {
+                contribution.setSubrole(newSubrole.toString());
+                System.out.println("Updated subRole with roles: " + newSubrole.toString());
+            } else {
+                System.out.println("The fullname does not exist in the subroles JSON response.");
+
             }
         }
 

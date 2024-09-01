@@ -9,11 +9,8 @@ import com.datacurationthesis.datacurationthesis.repository.*;
 import com.datacurationthesis.datacurationthesis.service.DataCurationService;
 import com.datacurationthesis.datacurationthesis.service.GreekSpellCkeckerService;
 import com.datacurationthesis.datacurationthesis.service.LevenshteinService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,45 +75,13 @@ public class DataCurationController {
         return venueRepository.save(venue);
     }
 
-    @GetMapping("/contribution/update")
+    @PostMapping("/contribution/update")
     public Contribution updateContribution(@RequestParam Integer id) {
         Contribution contribution = contributionRepository.findById(id).get();
         LoggerController.info("Before cleaning contribution: " + contribution.toString());
         dataCurationService.cleanSingleContribution(contribution);
         LoggerController.info("Contribution Data cleaned: " + contribution.toString());
-        return contribution;
-    }
-
-    @GetMapping("/contribution/deserialize")
-    public void deserializeSubroles() {
-            String jsonString = """
-                {
-                  "Συντελεστές": {
-                    "Σκηνοθεσία": ["Γιώργος Καπουτζίδης"],
-                    "Βοηθός Σκηνοθέτη": ["Γιάννης Καλαβριανός"],
-                    "Σκηνικά": ["Κατερίνα Παπαγεωργίου"],
-                    "Κοστούμια": ["Βασίλης Ζούκας"],
-                    "Φωτισμοί": ["Χριστίνα Θανάσουλα"],
-                    "Μουσική": ["Δημήτρης Καμαρωτός"],
-                    "Φωτογραφίες": ["Πάνος Γιαννακόπουλος"],
-                    "Διεύθυνση Παραγωγής": ["Μαριάννα Μπάρλα"],
-                    "Επικοινωνία": ["Ανζελίνα Νταλιάνη"]
-                  }
-                }
-                """;
-
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                Map<String, Map<String, List<String>>> result = objectMapper.readValue(jsonString, new TypeReference<>() {});
-                Map<String, List<String>> contributorsMap = result.get("Συντελεστές");
-                System.out.println("Deserialized contributors:");
-                contributorsMap.forEach((role, names) -> {
-                    System.out.println(role + ": " + names);
-                });         
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Error deserializing json: " + e.getMessage());
-            }
+        return contributionRepository.save(contribution);
     }
 
     @GetMapping("/organizers/clean")
