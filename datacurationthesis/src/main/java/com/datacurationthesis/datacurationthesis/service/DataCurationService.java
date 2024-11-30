@@ -510,6 +510,7 @@ public class DataCurationService {
     private Role cleanRole(Role role) {
         if (role.getRole1() != null) {
             role.setRole1(normalizeString(role.getRole1()));
+            StringUtils.capitalizeWords(role.getRole1());
         }
         return role;
     }

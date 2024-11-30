@@ -75,7 +75,7 @@ public class DataCurationController {
         return venueRepository.save(venue);
     }
 
-    @PostMapping("/contribution/update")
+    @PutMapping("/contribution/update")
     public Contribution updateContribution(@RequestParam Integer id) {
         Contribution contribution = contributionRepository.findById(id).get();
         LoggerController.info("Before cleaning contribution: " + contribution.toString());
