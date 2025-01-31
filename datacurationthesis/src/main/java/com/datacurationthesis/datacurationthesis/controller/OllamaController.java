@@ -56,7 +56,7 @@ public class OllamaController {
 
             LoggerController.formattedInfo(
                     "Model used: " + chatResponse.getResults().toString());
-            return retryTemplate.execute(context -> chatResponse.getResult().getOutput().getContent());
+            return retryTemplate.execute(context -> chatResponse.getResult().getOutput().toString());
         } catch (TimeoutException e) {
             LoggerController.formattedError("Timeout Exception: ", e.getMessage());
             String errorResponse = "Response timed out. Please try again later.";
@@ -77,7 +77,7 @@ public class OllamaController {
             LoggerController.formattedInfo("Prompt sent to OpenAI API: " + prompt.toString());
 
             ChatResponse response = openAiChatClient.prompt(prompt).call().chatResponse();
-            String fullResponse = response.getResult().getOutput().getContent();
+            String fullResponse = response.getResult().getOutput().toString();
             LoggerController.formattedInfo("Response received from OpenAI API: " + fullResponse);
 
             String extractedAddress = extractAddress(fullResponse);
@@ -128,7 +128,7 @@ public class OllamaController {
         LoggerController.formattedInfo("Prompt sent to LLM: " + prompt.toString());
 
         ChatResponse response = openAiChatClient.prompt(prompt).call().chatResponse();
-        String fullResponse = response.getResult().getOutput().getContent();
+        String fullResponse = response.getResult().getOutput().toString();
         // Clean the response
         String cleanedResponse = fullResponse
                 .replace("```json", "")
